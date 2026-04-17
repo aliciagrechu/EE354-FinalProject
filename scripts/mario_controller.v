@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-module mario(
+module mario_controller(
 	input clk, //this clock must be a slow enough clock to view the changing positions of the objects
 	input rst,
 	input btnU, btnL, btnR,
@@ -35,6 +35,9 @@ module mario(
 	assign valid = in_sprite;
 	assign sprite_color = color_data;
 
+	reg signed [4:0] v_y;
+
+	always @(posedge clk) begin
 	//top-left of mario
 	if(btnR && ~btnL && hCount < 624)
 		mario_x <= mario_x + 2;
