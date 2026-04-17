@@ -1,12 +1,12 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
+//
+//
 // 
 // Create Date:    12:18:00 12/14/2017 
-// Design Name: 
+// Design Name:    ee354_final_project
 // Module Name:    vga_top 
-// Project Name: 
+// Project Name:   super_mario_bros
 // Target Devices: 
 // Tool versions: 
 // Description: 
@@ -17,8 +17,8 @@
 // Revision 0.01 - File Created
 // Additional Comments: 
 //
-// Date: 04/04/2020
-// Author: Yue (Julien) Niu
+// Date: 04/16/2026
+// Author: Yue (Julien) Niu Editors: Alicia Grechu & Raksheta Kulkarni
 // Description: Port from NEXYS3 to NEXYS4
 //////////////////////////////////////////////////////////////////////////////////
 module vga_top(
@@ -65,12 +65,15 @@ module vga_top(
 	wire move_clk;
 	assign move_clk=DIV_CLK[19]; //slower clock to drive the movement of objects on the vga screen
 	wire [11:0] background;
+
+	// TODO: instantiate all controllers once they're done
 	display_controller dc(.clk(ClkPort), .hSync(hSync), .vSync(vSync), .bright(bright), .hCount(hc), .vCount(vc));
-	block_controller sc(.clk(move_clk), .bright(bright), .rst(BtnC), .up(BtnU), .down(BtnD),.left(BtnL),.right(BtnR),.hCount(hc), .vCount(vc), .rgb(rgb), .background(background));
-	
+	// mario_controller mc(.clk(move_clk), .bright(bright), .rst(BtnC), .up(BtnU), .down(BtnD),.left(BtnL),.right(BtnR),.hCount(hc), .vCount(vc), .rgb(rgb), .background(background));
+	goomba_controller gc(.clk(move_clk),.bright(bright),.rst(BtnC),.hCount(hc),.vCount(vc),.mario_x(mario_x_final),.mario_y(mario_y_final),.rgb(rgb),.mario_hit(mario_hit));
+	// brick_collision bc(.clk(move_clk), .bright(bright), .rst(BtnC), .up(BtnU), .down(BtnD),.left(BtnL),.right(BtnR),.hCount(hc), .vCount(vc), .rgb(rgb), .background(background));
+	// floor_collision fc(.clk(move_clk), .bright(bright), .rst(BtnC), .up(BtnU), .down(BtnD),.left(BtnL),.right(BtnR),.hCount(hc), .vCount(vc), .rgb(rgb), .background(background));
 
 
-	
 	assign vgaR = rgb[11 : 8];
 	assign vgaG = rgb[7  : 4];
 	assign vgaB = rgb[3  : 0];
@@ -80,7 +83,7 @@ module vga_top(
 	assign QuadSpiFlashCS = 1'b1;
 	
 	//------------
-// SSD (Seven Segment Display)
+    // SSD (Seven Segment Display)
 	// reg [3:0]	SSD;
 	// wire [3:0]	SSD3, SSD2, SSD1, SSD0;
 	
