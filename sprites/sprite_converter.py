@@ -41,8 +41,8 @@ def rom_12_bit(name, im, mask=False, rem_x=-1, rem_y=-1):
     y_max, x_max, z = im.shape
 
     # get width of row and column case words
-    row_width = math.ceil(math.log(y_max-1,2))
-    col_width = math.ceil(math.log(x_max-1,2))
+    row_width = math.ceil(math.log2(y_max))
+    col_width = math.ceil(math.log2(x_max))
 
     # write beginning part of module up to case statements
     f.write("module " + name.split('.')[0] + "_rom\n\t(\n\t\t")
@@ -68,7 +68,7 @@ def rom_12_bit(name, im, mask=False, rem_x=-1, rem_y=-1):
             case = format(y, 'b').zfill(row_width) + format(x, 'b').zfill(col_width)
             if(mask==False):
                 currColor=get_color_bits(im,y,x)
-            elif(get_color(im,y,x)!=a):
+            elif(get_color_bits(im,y,x) != a):
                 currColor=get_color_bits(im,y,x)
             else:
                 currColor=0
@@ -98,9 +98,12 @@ def rom_12_bit(name, im, mask=False, rem_x=-1, rem_y=-1):
 
 # driver function
 def generate(name, rem_x=-1, rem_y=-1):
-    im = imageio.imread(name, mode = 'RGB')
+    im = imageio.imread(name, mode='RGB')
     print("width: " + str(im.shape[1]) + ", height: " + str(im.shape[0]))
-    rom_12_bit(name, im)
+    if rem_x == -1 or rem_y == -1:
+        rom_12_bit(name, im)
+    else:
+        rom_12_bit(name, im, True, rem_x, rem_y)
 
 # generate rom from full bitmap image
-generate("flappyBird.jpg")
+generate("goomba.jpg")

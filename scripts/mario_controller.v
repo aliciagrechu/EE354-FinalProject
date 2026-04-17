@@ -6,8 +6,6 @@ module block_controller(
 	input rst,
 	input up, input down, input left, input right,
 	input [9:0] hCount, vCount,
-	output reg [11:0] rgb,
-	output reg [11:0] background
    );
 	wire block_fill;
 	
@@ -83,6 +81,4 @@ module block_controller(
 				background <= 12'b0000_0000_1111;
 	end
 
-	
-	
 endmodule
