@@ -48,6 +48,15 @@ module vga_top(
 	wire [3:0] anode;
 	wire [11:0] rgb;
 	wire rst;
+
+	// wire declarations for mario and other instantiations
+	wire [9:0] mario_x, mario_y;         // current resolved position
+	wire [9:0] mario_x_next, mario_y_next; // proposed next position from mario_controller
+	wire [9:0] mario_y_fc;               // after floor_collision resolves Y
+	wire [9:0] mario_x_final, mario_y_final; // after brick_collision resolves X and Y
+	wire on_floor, on_brick, head_bumped;
+	wire blocked_left, blocked_right;
+	wire moving_up, moving_down, moving_left, moving_right;
 	
 	reg [3:0]	SSD;
 	wire [3:0]	SSD3, SSD2, SSD1, SSD0;
@@ -69,9 +78,45 @@ module vga_top(
 	// TODO: instantiate all controllers once they're done
 	display_controller dc(.clk(ClkPort), .hSync(hSync), .vSync(vSync), .bright(bright), .hCount(hc), .vCount(vc));
 	// mario_controller mc(.clk(move_clk), .bright(bright), .rst(BtnC), .up(BtnU), .down(BtnD),.left(BtnL),.right(BtnR),.hCount(hc), .vCount(vc), .rgb(rgb), .background(background));
-	goomba_controller gc(.clk(move_clk),.bright(bright),.rst(BtnC),.hCount(hc),.vCount(vc),.mario_x(mario_x_final),.mario_y(mario_y_final),.rgb(rgb),.mario_hit(mario_hit));
-	// brick_collision bc(.clk(move_clk), .bright(bright), .rst(BtnC), .up(BtnU), .down(BtnD),.left(BtnL),.right(BtnR),.hCount(hc), .vCount(vc), .rgb(rgb), .background(background));
-	// floor_collision fc(.clk(move_clk), .bright(bright), .rst(BtnC), .up(BtnU), .down(BtnD),.left(BtnL),.right(BtnR),.hCount(hc), .vCount(vc), .rgb(rgb), .background(background));
+	
+	goomba_controller gc(.clk(move_clk),
+	.bright(bright),.rst(BtnC),.hCount(hc),
+	.vCount(vc),.mario_x(mario_x_final),
+	.mario_y(mario_y_final),
+	.rgb(rgb),
+	.mario_hit(mario_hit)
+	);
+
+	floor_collision fc(
+    .clk(move_clk),
+    .rst(BtnC),
+    .mario_x(mario_x),
+    .mario_y(mario_y),
+    .mario_y_next(mario_y_next),
+    .mario_y_out(mario_y_fc),
+    .on_floor(on_floor)
+	);
+
+	brick_collision bc(
+		.clk(move_clk),
+		.rst(BtnC),
+		.mario_x(mario_x),
+		.mario_y(mario_y),
+		.mario_x_next(mario_x_next),
+		.mario_y_next(mario_y_fc),      // floor already resolved, pass that in
+		.mario_moving_right(moving_right),
+		.mario_moving_left(moving_left),
+		.mario_moving_down(moving_down),
+		.mario_moving_up(moving_up),
+		.brick_x(brick_x),
+		.brick_y(brick_y),
+		.mario_x_out(mario_x_final),
+		.mario_y_out(mario_y_final),
+		.on_brick(on_brick),
+		.head_bumped(head_bumped),
+		.blocked_left(blocked_left),
+		.blocked_right(blocked_right)
+	);
 
 
 	assign vgaR = rgb[11 : 8];
