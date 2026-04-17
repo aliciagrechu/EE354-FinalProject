@@ -17,7 +17,7 @@ module mario_controller(
 	//check if pixel is in bounds of mario
 	wire mario_bound;
 	assign mario_bound = (hCount >= mario_x && hCount < mario_x + width 
-						&& vCount >= mario_y && vCount < mario_y + height)
+						&& vCount >= mario_y && vCount < mario_y + height);
 	//sprite pixel
 	wire [3:0] sprite_x = hCount - mario_x;
 	wire [3:0] sprite_y = vCount - mario_y;
@@ -25,7 +25,7 @@ module mario_controller(
 	//instantiate rom
 	wire[11:0] sprite_color;
 
-	mario-sprite_rom u_rom(
+	mario_sprite_rom u_rom(
 		.clk(clk),
 		.sprite_x(row),
 		.sprite_y(col),
@@ -36,15 +36,36 @@ module mario_controller(
 	assign sprite_color = color_data;
 
 	reg signed [4:0] v_y;
+	reg jumping;
+
 
 	always @(posedge clk) begin
 	//top-left of mario
-	if(btnR && ~btnL && hCount < 624)
-		mario_x <= mario_x + 2;
-	if(btnL && ~btnR && vCount > 0 )
-		mario_x <= mario_x - 2;
-	if(btnU)
+		if (v_y<9)
+			v_y <= v_y +1;
+		mario_y<= mario_y + v_y; //apply gravity by default
 
+		if(mario_y >= brick) begin
+			mario_y <= brick;
+			v_y <= 0;
+			jumping <=0;
+		end	
+		if(mario_y >= floor) begin
+			mario_y <= floor;
+			v_y <= 0;
+			jumping <=0;
+		end	
+
+		
+		if(btnU && !jumping) begin
+			v_y <= -8;
+			jumping <= 1;
+		end
+		if(btnR && ~btnL && hCount < 624)
+			mario_x <= mario_x + 2;
+		if(btnL && ~btnR && vCount > 0 )
+			mario_x <= mario_x - 2;
+	end
 
 
 	//these two values dictate the center of the block, incrementing and decrementing them leads the block to move in certain directions

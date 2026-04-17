@@ -1,4 +1,4 @@
-module mario-sprite_rom
+module mario_sprite_rom
 	(
 		input wire clk,
 		input wire [3:0] row,
