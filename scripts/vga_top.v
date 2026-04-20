@@ -74,10 +74,11 @@ module vga_top(
 	wire move_clk;
 	assign move_clk=DIV_CLK[19]; //slower clock to drive the movement of objects on the vga screen
 	wire [11:0] background;
-
+	wire [11:0] mario_rgb;
+	wire mario_valid;
 	// TODO: instantiate all controllers once they're done
 	display_controller dc(.clk(ClkPort), .hSync(hSync), .vSync(vSync), .bright(bright), .hCount(hc), .vCount(vc));
-	// mario_controller mc(.clk(move_clk), .bright(bright), .rst(BtnC), .up(BtnU), .down(BtnD),.left(BtnL),.right(BtnR),.hCount(hc), .vCount(vc), .rgb(rgb), .background(background));
+	mario_controller mc(.clk(move_clk), .rst(rst),.btnU(BtnU), .btnL(BtnL),.btnR(BtnR),.hCount(hc), .vCount(vc), .rgb(mario_rgb), .mario_x(mario_x), .mario_y(mario_y), .valid(mario_valid));
 	
 	goomba_controller gc(.clk(move_clk),
 	.bright(bright),.rst(BtnC),.hCount(hc),

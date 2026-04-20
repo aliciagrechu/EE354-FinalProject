@@ -27,13 +27,13 @@ module mario_controller(
 
 	mario_sprite_rom u_rom(
 		.clk(clk),
-		.sprite_x(row),
-		.sprite_y(col),
-		.sprite_color(color_data)
+		.row(sprite_y),
+		.col(sprite_x),
+		.color_data(sprite_color)
 	);
 	
-	assign valid = in_sprite;
-	assign sprite_color = color_data;
+	assign valid = mario_bound;
+	output wire[11:0] rgb = sprite_color;
 
 	reg signed [4:0] v_y;
 	reg jumping;
