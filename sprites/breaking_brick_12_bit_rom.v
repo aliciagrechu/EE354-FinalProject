@@ -1,4 +1,4 @@
-module breaking-brick_rom
+module breaking_brick_rom
 	(
 		input wire clk,
 		input wire [3:0] row,

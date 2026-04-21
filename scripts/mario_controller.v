@@ -1,133 +1,138 @@
 `timescale 1ns / 1ps
 
 module mario_controller(
-	input clk, //this clock must be a slow enough clock to view the changing positions of the objects
-	input rst,
-	input btnU, btnL, btnR,
-	input [9:0] hCount, vCount,
-	output reg[9:0] mario_x, mario_y,
-	output reg [11:0] rgb,
-	output valid
-   );
-	
-	//sprite size
-	localparam  width = 16;
-	localparam  height = 16;
+    input clk,
+    input rst,
+    input btnU, btnL, btnR,
+    input [9:0] hCount, vCount,
 
-	//check if pixel is in bounds of mario
-	wire mario_bound;
-	assign mario_bound = (hCount >= mario_x && hCount < mario_x + width 
-						&& vCount >= mario_y && vCount < mario_y + height);
-	//sprite pixel
-	wire [3:0] sprite_x = hCount - mario_x;
-	wire [3:0] sprite_y = vCount - mario_y;
+    // final resolved position fed back from collision modules
+    input [9:0] mario_x_final,
+    input [9:0] mario_y_final,
 
-	//instantiate rom
-	wire[11:0] sprite_color;
+    // collision flags from floor_collision and brick_collision
+    input on_floor,
+    input on_brick,
+    input head_bumped,
+    input blocked_left,
+    input blocked_right,
 
-	mario_sprite_rom u_rom(
-		.clk(clk),
-		.row(sprite_y),
-		.col(sprite_x),
-		.color_data(sprite_color)
-	);
-	
-	assign valid = mario_bound;
-	output wire[11:0] rgb = sprite_color;
+    // proposed next position out to collision chain
+    output reg [9:0] mario_x_next, mario_y_next,
 
-	reg signed [4:0] v_y;
-	reg jumping;
+    // current position (driven by resolved final pos)
+    output reg [9:0] mario_x, mario_y,
 
+    // velocity direction flags for brick_collision
+    output reg moving_up, moving_down,
+    output reg moving_left, moving_right,
 
-	always @(posedge clk) begin
-	//top-left of mario
-		if (v_y<9)
-			v_y <= v_y +1;
-		mario_y<= mario_y + v_y; //apply gravity by default
+    // drawing
+    output reg [11:0] rgb,
+    output reg valid
+);
 
-		if(mario_y >= brick) begin
-			mario_y <= brick;
-			v_y <= 0;
-			jumping <=0;
-		end	
-		if(mario_y >= floor) begin
-			mario_y <= floor;
-			v_y <= 0;
-			jumping <=0;
-		end	
+    // sprite size
+    localparam WIDTH        = 10'b0000010000; // 16
+    localparam HEIGHT       = 10'b0000010000; // 16
 
-		
-		if(btnU && !jumping) begin
-			v_y <= -8;
-			jumping <= 1;
-		end
-		if(btnR && ~btnL && hCount < 624)
-			mario_x <= mario_x + 2;
-		if(btnL && ~btnR && vCount > 0 )
-			mario_x <= mario_x - 2;
-	end
+    // screen bounds
+    localparam SCREEN_LEFT  = 10'b0000000000; // 0
+    localparam SCREEN_RIGHT = 10'b1001110000; // 624
 
+    // is current pixel inside mario's bounding box?
+    wire mario_bound;
+    assign mario_bound = (hCount >= mario_x && hCount < mario_x + WIDTH &&
+                          vCount >= mario_y && vCount < mario_y + HEIGHT);
 
-	//these two values dictate the center of the block, incrementing and decrementing them leads the block to move in certain directions
-	// reg [9:0] xpos, ypos;
-	
-	// parameter RED   = 12'b1111_0000_0000;
-	
-	// /*when outputting the rgb value in an always block like this, make sure to include the if(~bright) statement, as this ensures the monitor 
-	// will output some data to every pixel and not just the images you are trying to display*/
-	// always@ (*) begin
-    // 	if(~bright )	//force black if not inside the display area
-	// 		rgb = 12'b0000_0000_0000;
-	// 	else if (block_fill) 
-	// 		rgb = RED; 
-	// 	else	
-	// 		rgb=background;
-	// end
-	// 	//the +-5 for the positions give the dimension of the block (i.e. it will be 10x10 pixels)
-	// assign block_fill=vCount>=(ypos-5) && vCount<=(ypos+5) && hCount>=(xpos-5) && hCount<=(xpos+5);
-	
-	// always@(posedge clk, posedge rst) 
-	// begin
-	// 	if(rst)
-	// 	begin 
-	// 		//rough values for center of screen
-	// 		xpos<=450;
-	// 		ypos<=250;
-	// 	end
-	// 	else if (clk) begin
-		
-	// 	/* Note that the top left of the screen does NOT correlate to vCount=0 and hCount=0. The display_controller.v file has the 
-	// 		synchronizing pulses for both the horizontal sync and the vertical sync begin at vcount=0 and hcount=0. Recall that after 
-	// 		the length of the pulse, there is also a short period called the back porch before the display area begins. So effectively, 
-	// 		the top left corner corresponds to (hcount,vcount)~(144,35). Which means with a 640x480 resolution, the bottom right corner 
-	// 		corresponds to ~(783,515).  
-	// 	*/
-	// 		if(right) begin
-	// 			xpos<=xpos+2; //change the amount you increment to make the speed faster 
-	// 			if(xpos==800) //these are rough values to attempt looping around, you can fine-tune them to make it more accurate- refer to the block comment above
-	// 				xpos<=150;
-	// 		end
-	// 		else if(left) begin
-	// 			xpos<=xpos-2;
-	// 			if(xpos==150)
-	// 				xpos<=800;
-	// 		end
-	// 		else if(up) begin
-	// 			ypos<=ypos-2;
-	// 			if(ypos==34)
-	// 				ypos<=514;
-	// 		end
-	// 		else if(down) begin
-	// 			ypos<=ypos+2;
-	// 			if(ypos==514)
-	// 				ypos<=34;
-	// 		end
-	// 	end
-	// end
-	
-	//the background color reflects the most recent button press
-	
+    // sprite pixel coordinates
+    wire [3:0] sprite_x = hCount - mario_x;
+    wire [3:0] sprite_y = vCount - mario_y;
 
-	
-	
+    // ROM
+    wire [11:0] sprite_color;
+    mario_sprite_rom u_rom(
+        .clk(clk),
+        .row(sprite_y),
+        .col(sprite_x),
+        .color_data(sprite_color)
+    );
+
+    // draw
+    always @(*) begin
+        if (mario_bound && sprite_color != 12'b000000000000) begin
+            rgb   = sprite_color;
+            valid = 1'b1;
+        end else begin
+            rgb   = 12'b000000000000;
+            valid = 1'b0;
+        end
+    end
+
+    // physics
+    reg signed [4:0] v_y;
+    reg jumping;
+
+    // grounded = on floor OR standing on a brick
+    wire grounded = on_floor | on_brick;
+
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            mario_x      <= 10'b0001100100; // 100
+            mario_y      <= 10'b0110100000; // 416
+            v_y          <= 5'b00000;
+            jumping      <= 1'b0;
+            moving_up    <= 1'b0;
+            moving_down  <= 1'b0;
+            moving_left  <= 1'b0;
+            moving_right <= 1'b0;
+        end else begin
+
+            // accept resolved position from collision modules
+            mario_x <= mario_x_final;
+            mario_y <= mario_y_final;
+
+            // --- gravity ---
+            if (!grounded) begin
+                if (v_y < 5'b01001)        // max fall speed = 9
+                    v_y <= v_y + 5'b00001;
+            end else begin
+                if (v_y > 5'b00000)
+                    v_y <= 5'b00000;       // stop falling when grounded
+            end
+
+            // --- jump ---
+            if (btnU && !jumping && grounded) begin
+                v_y     <= -5'b01000;      // jump velocity = -8
+                jumping <= 1'b1;
+            end
+
+            // --- head bump kills upward velocity ---
+            if (head_bumped && v_y < 5'b00000)
+                v_y <= 5'b00000;
+
+            // --- reset jumping flag when grounded ---
+            if (grounded)
+                jumping <= 1'b0;
+
+            // --- propose next Y ---
+            mario_y_next <= mario_y + v_y;
+
+            // --- propose next X ---
+            if (btnR && !btnL && !blocked_right && mario_x < SCREEN_RIGHT)
+                mario_x_next <= mario_x + 10'b0000000010; // +2
+            else if (btnL && !btnR && !blocked_left && mario_x > SCREEN_LEFT)
+                mario_x_next <= mario_x - 10'b0000000010; // -2
+            else
+                mario_x_next <= mario_x;
+
+            // --- direction flags ---
+            moving_down  <= (v_y > 5'b00000);
+            moving_up    <= (v_y < 5'b00000);
+            moving_right <= (btnR && !btnL);
+            moving_left  <= (btnL && !btnR);
+
+        end
+    end
+
 endmodule
