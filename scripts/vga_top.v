@@ -19,7 +19,7 @@ module vga_top(
 	// -----------------------------------------------------------------------
 	wire Reset;
 	assign Reset = BtnC;
-
+    wire Qi, Qp, Qw, Ql;  
 	// -----------------------------------------------------------------------
 	// Clock divider
 	// -----------------------------------------------------------------------
@@ -62,17 +62,21 @@ module vga_top(
 	// -----------------------------------------------------------------------
 	wire [11:0] mario_rgb, floor_rgb;
 	wire        mario_valid, floor_valid;
-
+    wire mario_hit;
+    wire [11:0] goomba_rgb;
+    wire goomba_valid;
 	// priority mux — mario on top, then floor, then sky blue background
 	wire [11:0] rgb;
 	assign rgb = (mario_valid) ? mario_rgb :
+	             (goomba_valid) ? goomba_rgb :
 	             (floor_valid) ? floor_rgb :
 	             12'b010110001111; // sky blue
 
 	assign vgaR = rgb[11:8];
 	assign vgaG = rgb[7:4];
 	assign vgaB = rgb[3:0];
-
+    
+    
 	// -----------------------------------------------------------------------
 	// Module instantiations
 	// -----------------------------------------------------------------------
@@ -82,7 +86,27 @@ module vga_top(
 		.bright(bright),
 		.hCount(hc), .vCount(vc)
 	);
+   
 
+    goomba_controller gc(
+        .clk(ClkPort),
+        .bright(bright),
+        .rst(BtnC),
+        .hCount(hc), .vCount(vc),
+        .mario_x(mario_x), .mario_y(mario_y),
+        .rgb(goomba_rgb),
+        .mario_hit(mario_hit),
+        .goomba_valid(goomba_valid)
+    );
+
+    gameplay_states gs(
+        .Clk(move_clk),
+        .Reset(BtnC),
+        .BtnD(BtnD),
+        .Start(1'b0), .Ack(BtnD),
+        .marioHitGoombaFlag(mario_hit),  // ← the wire that connects them
+        .Qi(Qi), .Qp(Qp), .Qw(Qw), .Ql(Ql)
+    );
 	mario_controller mc(
 		.clk(move_clk),
 		.rst(BtnC),
@@ -104,7 +128,8 @@ module vga_top(
 		.moving_left(moving_left),
 		.moving_right(moving_right),
 		.rgb(mario_rgb),
-		.valid(mario_valid)
+		.valid(mario_valid),
+		.bright(bright)
 	);
 
 	floor_collision fc(

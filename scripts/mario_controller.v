@@ -16,7 +16,7 @@ module mario_controller(
     input head_bumped,
     input blocked_left,
     input blocked_right,
-
+    input bright,
     // proposed next position out to collision chain
     output reg [9:0] mario_x_next, mario_y_next,
 
@@ -33,12 +33,12 @@ module mario_controller(
 );
 
     // sprite size
-    localparam WIDTH        = 10'b0000010000; // 16
-    localparam HEIGHT       = 10'b0000010000; // 16
+    localparam WIDTH        = 16; // 16
+    localparam HEIGHT       = 16; // 16
 
     // screen bounds
-    localparam SCREEN_LEFT  = 10'b0000000000; // 0
-    localparam SCREEN_RIGHT = 10'b1001110000; // 624
+    localparam SCREEN_LEFT  = 0; // 0
+    localparam SCREEN_RIGHT = 624; // 624
 
     // is current pixel inside mario's bounding box?
     wire mario_bound;
@@ -59,8 +59,12 @@ module mario_controller(
     );
 
     // draw
+    
     always @(*) begin
-        if (mario_bound && sprite_color != 12'b000000000000) begin
+        if (~bright) begin
+            rgb   = 12'b000000000000;
+            valid = 1'b0;
+        end else if (mario_bound && sprite_color != 12'b000000000000) begin
             rgb   = sprite_color;
             valid = 1'b1;
         end else begin
@@ -70,18 +74,20 @@ module mario_controller(
     end
 
     // physics
-    reg signed [4:0] v_y;
+    reg [4:0] v_y;
     reg jumping;
+    reg up;
 
     // grounded = on floor OR standing on a brick
     wire grounded = on_floor | on_brick;
 
     always @(posedge clk or posedge rst) begin
         if (rst) begin
-            mario_x      <= 10'b0001100100; // 100
-            mario_y      <= 10'b0110100000; // 416
-            v_y          <= 5'b00000;
+            mario_x      <= 100; // 100
+            mario_y      <= 416; // 416
+            v_y          <= 0;
             jumping      <= 1'b0;
+            up           <=0;
             moving_up    <= 1'b0;
             moving_down  <= 1'b0;
             moving_left  <= 1'b0;
@@ -94,41 +100,50 @@ module mario_controller(
 
             // --- gravity ---
             if (!grounded) begin
-                if (v_y < 5'b01001)        // max fall speed = 9
-                    v_y <= v_y + 5'b00001;
+                if (up) begin//if we are going up (v_y<0
+                    if (v_y > 0)
+                        v_y <= v_y - 1;   // decelerating upward
+                end else begin
+                    if (v_y < 9)
+                        v_y <= v_y + 1;   // accelerating downward
+                end
             end else begin
-                if (v_y > 5'b00000)
-                    v_y <= 5'b00000;       // stop falling when grounded
+                v_y <= 0;
             end
 
             // --- jump ---
             if (btnU && !jumping && grounded) begin
-                v_y     <= -5'b01000;      // jump velocity = -8
+                v_y     <= 8;      // jump velocity = -8
                 jumping <= 1'b1;
+                up <= 1'b1;
             end
 
             // --- head bump kills upward velocity ---
-            if (head_bumped && v_y < 5'b00000)
-                v_y <= 5'b00000;
-
+            if (head_bumped && up)begin
+                v_y <= 0;
+                up<=0;
+            end
             // --- reset jumping flag when grounded ---
-            if (grounded)
+            if (grounded)begin
                 jumping <= 1'b0;
-
+                up<=1'b0;
+            end
             // --- propose next Y ---
-            mario_y_next <= mario_y + v_y;
-
+            if(up)
+                mario_y_next <= mario_y - v_y;
+            else
+                mario_y_next <= mario_y + v_y;
+            if(up && v_y == 0) //when we reach the peak of our jump
+                up<=0;
             // --- propose next X ---
             if (btnR && !btnL && !blocked_right && mario_x < SCREEN_RIGHT)
-                mario_x_next <= mario_x + 10'b0000000010; // +2
+                mario_x_next <= mario_x + 2; // +2
             else if (btnL && !btnR && !blocked_left && mario_x > SCREEN_LEFT)
-                mario_x_next <= mario_x - 10'b0000000010; // -2
+                mario_x_next <= mario_x - 2; // -2
             else
                 mario_x_next <= mario_x;
 
             // --- direction flags ---
-            moving_down  <= (v_y > 5'b00000);
-            moving_up    <= (v_y < 5'b00000);
             moving_right <= (btnR && !btnL);
             moving_left  <= (btnL && !btnR);
 

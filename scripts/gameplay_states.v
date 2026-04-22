@@ -1,9 +1,9 @@
 `timescale 1 ns / 100 ps
 
-module gameplay_states (Start, Ack, Clk, Reset, Qi, Qp, Qw, Ql);
+module gameplay_states (Start, Ack, Clk, Reset, Qi, Qp, Qw, Ql, BtnD, marioHitGoombaFlag);
 
 input BtnD;
-
+input marioHitGoombaFlag;
 input Start, Ack, Clk, Reset;
 output Qi, Qp, Qw, Ql;
 
@@ -13,23 +13,29 @@ reg [1:0] lives;
 reg [2:0] state;
 reg doneFlag;
 
-localparam
-INI	= 3'b001;
-PLAY = 3'b010;
-WIN = 3'b101;
-LOSE = 3'b100; 
+localparam INI	= 3'b001;
+localparam PLAY = 3'b010;
+localparam WIN = 3'b101;
+localparam LOSE = 3'b100; 
 
 assign {Qw, Ql, Qp, Qi} = state;
+reg hitLastFrame;
 
+always @(posedge Clk or posedge Reset) begin
+    if (Reset)
+        hitLastFrame <= 1'b0;
+    else
+        hitLastFrame <= marioHitGoombaFlag;
+end
 always @(posedge Clk, posedge Reset) 
 
   begin  : CU_n_DU
     if (Reset)
        begin
           state <= INI;
-          lives <= 2'bXX;
-          coins <= 3'bXXX;
-		  doneFlag <= 1'bX; 
+          lives <= 2'b11;
+          coins <= 3'b000;
+		  doneFlag <= 1'b0; 
 	    end
     else
        begin
@@ -41,19 +47,19 @@ always @(posedge Clk, posedge Reset)
 		        if (BtnD)
 		           state <= PLAY;
                 else
-                    state <= INIT;
+                    state <= INI;
 		        // RTL operations in the DPU (Data Path Unit) 
                 lives <= 2'b11;
                 coins <= 3'b000;
                 doneFlag <= 1'b0; 
 	          end
 
-	        PLAY	: 
+	        PLAY: 
 	          begin
 		        // state transitions in the control unit
                 if(doneFlag == 1'b1)
                     state <= WIN;
-                if(lives == 2'b00)
+                else if(lives == 2'b00)
                     state <= LOSE;
 
 		        // RTL operations in the Data Path 	
