@@ -5,6 +5,7 @@ module gameplay_states (Start, Ack, Clk, Reset, Qi, Qp, Qw, Ql, BtnD, marioHitGo
 input BtnD;
 input marioHitGoombaFlag;
 input coinCollected;
+input qblockHit,
 input Start, Ack, Clk, Reset;
 output Qi, Qp, Qw, Ql;
 output reg respawn;
@@ -43,6 +44,7 @@ always @(posedge Clk, posedge Reset)
 		  respawn_pulse <= 0; 
 		  respawn <= 1'b0;
 	    end
+
     else
        begin
          (* full_case, parallel_case *)
@@ -82,8 +84,12 @@ always @(posedge Clk, posedge Reset)
 
  	          end
             // coin collection — only on rising edge
-              if (coin_collected && !coinLastFrame)
+                if (coin_collected && !coinLastFrame)
                   coins <= coins + 3'b001;
+
+            // increase score if question block is hit (once per block)
+            if (qblockHit)
+                coins <= coins + 3'b001;
             
             // TODO: IMPLEMENT THE STATE LOGIC / TRANSITIONS FOR THE STATES (i think this is it but check)
 	        WIN	:

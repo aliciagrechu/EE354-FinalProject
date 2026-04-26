@@ -73,10 +73,17 @@ module vga_top(
     wire [11:0] goomba_rgb;
     wire goomba_valid;
     wire respawn;
+	wire [11:0] coin_rgb;      
+    wire        coin_valid;     
+    wire [11:0] qblock_rgb;    
+    wire        qblock_valid;   
+    wire        qblock_hit;     
 	// priority mux — mario on top, then floor, then sky blue background
 	wire [11:0] rgb;
 	assign rgb = (mario_valid) ? mario_rgb :
-	             (any_brick_valid)  ? any_brick_rgb  :
+				 (coin_valid) ? coin_rgb :
+				 (qblock_valid) ? qblock_rgb :
+	             (any_brick_valid) ? any_brick_rgb :
 	             (goomba_valid) ? goomba_rgb :
 	             (floor_valid) ? floor_rgb :
 	             12'b000000000000; // black
@@ -116,7 +123,8 @@ module vga_top(
         .BtnD(BtnD),
         .respawn(respawn),
         .Start(1'b0), .Ack(BtnD),
-        .marioHitGoombaFlag(mario_hit),  // ← the wire that connects them
+        .marioHitGoombaFlag(mario_hit),  
+		.qblock_hit(qblock_hit),         
         .Qi(Qi), .Qp(Qp), .Qw(Qw), .Ql(Ql)
     );
 	mario_controller mc(
@@ -174,6 +182,20 @@ module vga_top(
         .blocked_left(blocked_left),
         .blocked_right(blocked_right)
     );
+	question_block_controller qbc(
+		.clk(ClkPort),
+		.move_clk(move_clk),
+		.bright(bright),
+		.rst(BtnC),
+		.hCount(hc),
+		.vCount(vc),
+		.mario_x(mario_x),
+		.mario_y(mario_y),
+		.mario_moving_up(moving_up),
+		.rgb(qblock_rgb),
+		.qblock_valid(qblock_valid),
+		.qblockHit(qblock_hit)
+	);
 	floor_controller flc(
 		.clk(ClkPort),
 		.bright(bright),
