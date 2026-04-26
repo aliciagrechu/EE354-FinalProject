@@ -25,10 +25,12 @@ module display_controller(
 	input clk,
 	output hSync, vSync,
 	output reg bright,
+	output wire clk25_out,
 	output reg[9:0] hCount, 
 	output reg [9:0] vCount // Covers 800, width of the screen, because it's 2^10
 	);
-	
+	    // ← add to port list
+     // ← add inside module
 	reg pulse;
 	reg clk25;
 	
@@ -62,7 +64,7 @@ module display_controller(
 		
 	assign hSync = (hCount < 96) ? 0:1;
 	assign vSync = (vCount < 2) ? 0:1;
-		
+	assign clk25_out = clk25;
 	always @(posedge clk25)
 		begin
 		if(hCount > 10'd143 && hCount < 10'd784 && vCount > 10'd34 && vCount < 10'd516)

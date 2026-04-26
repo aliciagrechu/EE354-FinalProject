@@ -2,6 +2,7 @@
 
 module goomba_controller(
     input clk,
+    input move_clk,
     input bright,
     input rst,
     input [9:0] hCount,
@@ -20,8 +21,8 @@ module goomba_controller(
     wire [3:0] sprite_row, sprite_col;
     wire [11:0] sprite_color;
 
-    parameter LEFT_EDGE   = 10'd144;
-    parameter RIGHT_EDGE  = 10'd783;
+    parameter LEFT_EDGE   = 10'd174;
+    parameter RIGHT_EDGE  = 10'd624;
     parameter GOOMBA_SIZE = 10'd16;
     parameter MARIO_W     = 10'd16;
     parameter MARIO_H     = 10'd16;
@@ -33,7 +34,7 @@ module goomba_controller(
     assign sprite_col = hCount - goomba_x;
     assign sprite_row = vCount - goomba_y;
 
-    goomba_rom goomba_rom_inst (
+    goomba_right_rom goomba_right_rom_inst(
         .clk(clk),
         .row(sprite_row),
         .col(sprite_col),
@@ -41,10 +42,10 @@ module goomba_controller(
     );
 
     // movement
-    always @(posedge clk or posedge rst) begin
+    always @(posedge move_clk or posedge rst) begin
         if (rst) begin
             goomba_x  <= 10'd300;
-            goomba_y  <= 10'd400;
+            goomba_y  <= 10'd432;
             direction <= 1'b0;
         end else begin
             if (direction == 1'b0) begin

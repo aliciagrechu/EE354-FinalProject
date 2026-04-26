@@ -29,14 +29,15 @@ module vga_top(
 		else       DIV_CLK <= DIV_CLK + 1'b1;
 	end
 	wire move_clk;
-	assign move_clk = DIV_CLK[19];
+	assign move_clk = DIV_CLK[20];
 
 	// -----------------------------------------------------------------------
 	// VGA signals
 	// -----------------------------------------------------------------------
 	wire bright;
 	wire [9:0] hc, vc;
-
+    wire clk25;
+    wire[3:0] v_y;
 	// -----------------------------------------------------------------------
 	// Position wires
 	// -----------------------------------------------------------------------
@@ -47,15 +48,21 @@ module vga_top(
 	wire on_floor;
 	wire moving_up, moving_down, moving_left, moving_right;
 
-	// tie off unused collision inputs for now
-	wire on_brick     = 1'b0;
-	wire head_bumped  = 1'b0;
-	wire blocked_left = 1'b0;
-	wire blocked_right= 1'b0;
+	// declare these wires at the top with your other wires
+    wire [9:0] mario_x_after_brick, mario_y_after_brick;
+    
+    wire on_brick, head_bumped, blocked_left, blocked_right; // remove the tie-off lines
 
-	// bypass brick_collision — feed floor resolved pos directly to final
-	assign mario_x_final = mario_x_next;
-	assign mario_y_final = mario_y_fc;
+    wire [11:0] brick_rgb0, brick_rgb1, brick_rgb2, brick_rgb3;
+
+    wire        brick_valid0, brick_valid1, brick_valid2, brick_valid3;
+    wire        any_brick_valid = brick_valid0 | brick_valid1 | brick_valid2 | brick_valid3;
+	wire [11:0] any_brick_rgb = brick_valid0 ? brick_rgb0 :
+                            brick_valid1 ? brick_rgb1 :
+                            brick_valid2 ? brick_rgb2 :
+                                           brick_rgb3;
+    assign mario_x_final = mario_x_after_brick;
+    assign mario_y_final = mario_y_after_brick;
 
 	// -----------------------------------------------------------------------
 	// RGB wires
@@ -65,12 +72,14 @@ module vga_top(
     wire mario_hit;
     wire [11:0] goomba_rgb;
     wire goomba_valid;
+    wire respawn;
 	// priority mux — mario on top, then floor, then sky blue background
 	wire [11:0] rgb;
 	assign rgb = (mario_valid) ? mario_rgb :
+	             (any_brick_valid)  ? any_brick_rgb  :
 	             (goomba_valid) ? goomba_rgb :
 	             (floor_valid) ? floor_rgb :
-	             12'b010110001111; // sky blue
+	             12'b000000000000; // black
 
 	assign vgaR = rgb[11:8];
 	assign vgaG = rgb[7:4];
@@ -82,6 +91,7 @@ module vga_top(
 	// -----------------------------------------------------------------------
 	display_controller dc(
 		.clk(ClkPort),
+		.clk25_out(clk25),
 		.hSync(hSync), .vSync(vSync),
 		.bright(bright),
 		.hCount(hc), .vCount(vc)
@@ -90,6 +100,7 @@ module vga_top(
 
     goomba_controller gc(
         .clk(ClkPort),
+        .move_clk(move_clk),
         .bright(bright),
         .rst(BtnC),
         .hCount(hc), .vCount(vc),
@@ -103,13 +114,16 @@ module vga_top(
         .Clk(move_clk),
         .Reset(BtnC),
         .BtnD(BtnD),
+        .respawn(respawn),
         .Start(1'b0), .Ack(BtnD),
         .marioHitGoombaFlag(mario_hit),  // ← the wire that connects them
         .Qi(Qi), .Qp(Qp), .Qw(Qw), .Ql(Ql)
     );
 	mario_controller mc(
-		.clk(move_clk),
+	    .clk(clk25),
+		.move_clk(move_clk),
 		.rst(BtnC),
+		.respawn(respawn),
 		.btnU(BtnU), .btnL(BtnL), .btnR(BtnR),
 		.hCount(hc), .vCount(vc),
 		.mario_x_final(mario_x_final),
@@ -129,7 +143,8 @@ module vga_top(
 		.moving_right(moving_right),
 		.rgb(mario_rgb),
 		.valid(mario_valid),
-		.bright(bright)
+		.bright(bright),
+		.v_y(v_y)
 	);
 
 	floor_collision fc(
@@ -141,7 +156,24 @@ module vga_top(
 		.mario_y_out(mario_y_fc),
 		.on_floor(on_floor)
 	);
-
+    brick_collision bc(
+        .clk(move_clk),
+        .rst(BtnC),
+        .mario_x(mario_x),
+        .mario_y(mario_y),
+        .mario_x_next(mario_x_next),
+        .mario_y_next(mario_y_fc),        // chained after floor_collision
+        .mario_moving_right(moving_right),
+        .mario_moving_left(moving_left),
+        .mario_moving_down(moving_down),
+        .mario_moving_up(moving_up),
+        .mario_x_out(mario_x_after_brick),
+        .mario_y_out(mario_y_after_brick),
+        .on_brick(on_brick),
+        .head_bumped(head_bumped),
+        .blocked_left(blocked_left),
+        .blocked_right(blocked_right)
+    );
 	floor_controller flc(
 		.clk(ClkPort),
 		.bright(bright),
@@ -149,6 +181,50 @@ module vga_top(
 		.rgb(floor_rgb),
 		.floor_valid(floor_valid)
 	);
+	brick_controller brick_inst0(
+        .clk(ClkPort),
+        .bright(bright),
+        .hCount(hc),
+        .vCount(vc),
+        .brick_x(312),   // horizontal center (640/2 - 8)
+        .brick_y(300),   // vertical center (480/2 - 8)
+        .brick_active(1'b1),
+        .rgb(brick_rgb0),
+        .brick_valid(brick_valid0)
+    );
+    brick_controller brick_inst1(
+        .clk(ClkPort),
+        .bright(bright),
+        .hCount(hc),
+        .vCount(vc),
+        .brick_x(328),   // horizontal center (640/2 - 8)
+        .brick_y(300),   // vertical center (480/2 - 8)
+        .brick_active(1'b1),
+        .rgb(brick_rgb1),
+        .brick_valid(brick_valid1)
+    );
+    brick_controller brick_inst2(
+        .clk(ClkPort),
+        .bright(bright),
+        .hCount(hc),
+        .vCount(vc),
+        .brick_x(344),   // horizontal center (640/2 - 8)
+        .brick_y(300),   // vertical center (480/2 - 8)
+        .brick_active(1'b1),
+        .rgb(brick_rgb2),
+        .brick_valid(brick_valid2)
+    );
+    brick_controller brick_inst3(
+        .clk(ClkPort),
+        .bright(bright),
+        .hCount(hc),
+        .vCount(vc),
+        .brick_x(360),   // horizontal center (640/2 - 8)
+        .brick_y(300),   // vertical center (480/2 - 8)
+        .brick_active(1'b1),
+        .rgb(brick_rgb3),
+        .brick_valid(brick_valid3)
+    );
 
 	// -----------------------------------------------------------------------
 	// SSD — displaying mario_x on SSD for debug
@@ -161,8 +237,9 @@ module vga_top(
 	// show mario_x on SSD for easy debugging
 	assign SSD3 = 4'b0000;
 	assign SSD2 = 4'b0000;
-	assign SSD1 = mario_x[7:4];
-	assign SSD0 = mario_x[3:0];
+	// in vga_top temporarily
+    assign SSD1 = {3'b0, on_floor};  // shows 0 or 1
+    assign SSD0 = v_y[3:0];          // shows current velocity
 
 	assign ssdscan_clk = DIV_CLK[19:18];
 	assign An0 = !(~ssdscan_clk[1] && ~ssdscan_clk[0]);

@@ -23,8 +23,8 @@ module floor_collision (
     // Mario bottom = mario_y + MARIO_HEIGHT - 1
 
     // Outputs
-    output reg  [9:0]  mario_y_out,      // collision-resolved Y position
-    output reg         on_floor          // 1 = Mario is standing on floor
+    output wire  [9:0]  mario_y_out,      // collision-resolved Y position
+    output wire         on_floor          // 1 = Mario is standing on floor
 );
 
     // -----------------------------------------------------------------------
@@ -52,24 +52,26 @@ module floor_collision (
     // Detect if the proposed next position would penetrate the floor
     wire floor_collision_detected;
     assign floor_collision_detected = (mario_bottom_next >= FLOOR_TOP);
-
+    // replace the always block with pure assigns
+    assign mario_y_out = floor_collision_detected ? MARIO_STAND_Y : mario_y_next;
+    assign on_floor    = floor_collision_detected;
     // -----------------------------------------------------------------------
     // Output register — update every clock cycle
     // -----------------------------------------------------------------------
-    always @(posedge clk or posedge rst) begin
-        if (rst) begin
-            mario_y_out <= MARIO_STAND_Y;  // spawn Mario standing on floor
-            on_floor    <= 1'b1;
-        end else begin
-            if (floor_collision_detected) begin
-                // Clamp Mario so his feet sit exactly on the floor top edge
-                mario_y_out <= MARIO_STAND_Y;
-                on_floor    <= 1'b1;
-            end else begin
-                mario_y_out <= mario_y_next;
-                on_floor    <= 1'b0;
-            end
-        end
-    end
+//    always @(posedge clk or posedge rst) begin
+//        if (rst) begin
+//            mario_y_out <= MARIO_STAND_Y;  // spawn Mario standing on floor
+//            on_floor    <= 1'b1;
+//        end else begin
+//            if (floor_collision_detected) begin
+//                // Clamp Mario so his feet sit exactly on the floor top edge
+//                mario_y_out <= MARIO_STAND_Y;
+//                on_floor    <= 1'b1;
+//            end else begin
+//                mario_y_out <= mario_y_next;
+//                on_floor    <= 1'b0;
+//            end
+//        end
+//    end
 
 endmodule

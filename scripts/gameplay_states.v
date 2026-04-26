@@ -1,11 +1,12 @@
 `timescale 1 ns / 100 ps
 
-module gameplay_states (Start, Ack, Clk, Reset, Qi, Qp, Qw, Ql, BtnD, marioHitGoombaFlag);
+module gameplay_states (Start, Ack, Clk, Reset, Qi, Qp, Qw, Ql, BtnD, marioHitGoombaFlag, respawn);
 
 input BtnD;
 input marioHitGoombaFlag;
 input Start, Ack, Clk, Reset;
 output Qi, Qp, Qw, Ql;
+output reg respawn;
 
 // Rest are wire by default
 reg [2:0] coins; // ~5 coins total in the level
@@ -20,7 +21,7 @@ localparam LOSE = 3'b100;
 
 assign {Qw, Ql, Qp, Qi} = state;
 reg hitLastFrame;
-
+reg [1:0] respawn_pulse;
 always @(posedge Clk or posedge Reset) begin
     if (Reset)
         hitLastFrame <= 1'b0;
@@ -35,11 +36,14 @@ always @(posedge Clk, posedge Reset)
           state <= INI;
           lives <= 2'b11;
           coins <= 3'b000;
-		  doneFlag <= 1'b0; 
+		  doneFlag <= 1'b0;
+		  respawn_pulse <= 0; 
+		  respawn <= 1'b0;
 	    end
     else
        begin
          (* full_case, parallel_case *)
+         
          case (state)
 	        INI	: 
 	          begin
@@ -63,8 +67,15 @@ always @(posedge Clk, posedge Reset)
                     state <= LOSE;
 
 		        // RTL operations in the Data Path 	
-                if(marioHitGoombaFlag && !hitLastFrame)
+                if(marioHitGoombaFlag && !hitLastFrame && respawn==0)begin
                     lives <= lives - 1;
+                    respawn_pulse <= 2'd2;
+                    respawn <= 1'b1;  // start immediately
+                end else if (respawn_pulse > 0) begin
+                    respawn_pulse <= respawn_pulse - 1;
+                    respawn <= 1'b1;
+                end else
+                    respawn <= 1'b0;
 
  	          end
             

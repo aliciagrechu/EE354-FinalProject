@@ -13,7 +13,7 @@ module floor_controller(
     // screen is 640x480, so floor is y=[448, 479]
     parameter FLOOR_Y      = 10'b0111000000; // 448
     parameter FLOOR_HEIGHT = 10'b0000100000; // 32
-    parameter FLOOR_WIDTH  = 10'b1010000000; // 640
+    parameter FLOOR_WIDTH  = 640; // 640
 
     // is current pixel inside the floor?
     wire floor_area;
