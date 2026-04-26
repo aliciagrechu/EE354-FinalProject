@@ -4,6 +4,7 @@ module gameplay_states (Start, Ack, Clk, Reset, Qi, Qp, Qw, Ql, BtnD, marioHitGo
 
 input BtnD;
 input marioHitGoombaFlag;
+input coinCollected;
 input Start, Ack, Clk, Reset;
 output Qi, Qp, Qw, Ql;
 output reg respawn;
@@ -21,7 +22,9 @@ localparam LOSE = 3'b100;
 
 assign {Qw, Ql, Qp, Qi} = state;
 reg hitLastFrame;
+reg coinLastFrame;
 reg [1:0] respawn_pulse;
+
 always @(posedge Clk or posedge Reset) begin
     if (Reset)
         hitLastFrame <= 1'b0;
@@ -78,6 +81,9 @@ always @(posedge Clk, posedge Reset)
                     respawn <= 1'b0;
 
  	          end
+            // coin collection — only on rising edge
+              if (coin_collected && !coinLastFrame)
+                  coins <= coins + 3'b001;
             
             // TODO: IMPLEMENT THE STATE LOGIC / TRANSITIONS FOR THE STATES (i think this is it but check)
 	        WIN	:
