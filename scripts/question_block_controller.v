@@ -7,103 +7,142 @@ module question_block_controller(
     input rst,
     input [9:0] hCount,
     input [9:0] vCount,
-
-    // mario position and movement
     input [9:0] mario_x,
     input [9:0] mario_y,
     input       mario_moving_up,
-
     output reg [11:0] rgb,
     output reg        qblock_valid,
-    output reg        qblock_hit       // pulses high when mario first bumps it
+    output reg        qblock_hit
 );
 
-    // -----------------------------------------------------------------------
-    // Position — adjust these to match your level layout
-    // -----------------------------------------------------------------------
-    parameter BLOCK_X = 10'd304;   // TODO: adjust x position
-    parameter BLOCK_Y = 10'd250;   // TODO: adjust y position — above floor platform
     parameter BLOCK_SIZE = 10'd16;
     parameter MARIO_W    = 10'd16;
     parameter MARIO_H    = 10'd16;
+    parameter NUM_BLOCKS = 4;
 
     // -----------------------------------------------------------------------
-    // State — has mario hit it yet?
+    // Block positions — adjust these to match your level layout
+    // Screen is 640x480, floor at y=448
     // -----------------------------------------------------------------------
-    reg been_hit;   // 0 = question block, 1 = empty block
+    wire [9:0] block_x [0:3];
+    wire [9:0] block_y [0:3];
+
+    // TODO: adjust position for block coin as needed. this is just mockup
+    assign block_x[0] = 10'd288;  // TODO: adjust — higher up center block
+    assign block_y[0] = 10'd200;  // TODO: adjust — higher up center block
+
+    assign block_x[1] = 10'd272;  // TODO: adjust — middle left question block
+    assign block_y[1] = 10'd270;  // TODO: adjust — middle row
+
+    assign block_x[2] = 10'd304;  // TODO: adjust — middle right question block
+    assign block_y[2] = 10'd270;  // TODO: adjust — middle row
+
+    assign block_x[3] = 10'd400;  // TODO: adjust — right side question block
+    assign block_y[3] = 10'd270;  // TODO: adjust — right of brick platform
 
     // -----------------------------------------------------------------------
-    // Head bump detection — mario jumping up into the underside of the block
-    // fires only once thanks to been_hit flag
+    // Per-block been_hit state
     // -----------------------------------------------------------------------
-    wire mario_right  = mario_x + MARIO_W - 1;
-    wire mario_bottom = mario_y + MARIO_H - 1;
+    reg [3:0] been_hit;   // bit i = 1 means block i has been hit
 
-    // mario is directly below block and moving up into it
-    wire touching_underside =
-        !been_hit &&
-        mario_moving_up &&
-        (mario_x       <= BLOCK_X + BLOCK_SIZE - 1) &&
-        (mario_right   >= BLOCK_X) &&
-        (mario_y       <= BLOCK_Y + BLOCK_SIZE) &&
-        (mario_bottom  >= BLOCK_Y - 1);
+    // -----------------------------------------------------------------------
+    // Head bump detection per block
+    // -----------------------------------------------------------------------
+    wire [3:0] touching_underside;
+    genvar g;
+    generate
+        for (g = 0; g < NUM_BLOCKS; g = g + 1) begin : COLLISION
+            assign touching_underside[g] =
+                !been_hit[g] &&
+                mario_moving_up &&
+                (mario_x             <= block_x[g] + BLOCK_SIZE - 1) &&
+                (mario_x + MARIO_W   >= block_x[g]) &&
+                (mario_y             <= block_y[g] + BLOCK_SIZE) &&
+                (mario_y + MARIO_H   >= block_y[g] - 1);
+        end
+    endgenerate
 
-    // edge detection so qblock_hit only pulses for one cycle
-    reg touching_last;
+    // edge detection + been_hit update
+    reg [3:0] touching_last;
+    integer i;
     always @(posedge move_clk or posedge rst) begin
         if (rst) begin
-            been_hit      <= 1'b0;
-            touching_last <= 1'b0;
+            been_hit      <= 4'b0000;
+            touching_last <= 4'b0000;
             qblock_hit    <= 1'b0;
         end else begin
             touching_last <= touching_underside;
-            if (touching_underside && !touching_last) begin
-                been_hit   <= 1'b1;   // permanently switch to empty block
-                qblock_hit <= 1'b1;   // pulse high for one cycle
-            end else
-                qblock_hit <= 1'b0;
+            qblock_hit    <= 1'b0;   // default low
+            for (i = 0; i < NUM_BLOCKS; i = i + 1) begin
+                if (touching_underside[i] && !touching_last[i]) begin
+                    been_hit[i] <= 1'b1;
+                    qblock_hit  <= 1'b1;   // pulse high for one cycle
+                end
+            end
         end
     end
 
     // -----------------------------------------------------------------------
-    // Drawing — show question_block_rom if not hit, question_block2_rom if hit
+    // Drawing — one ROM pair per block
     // -----------------------------------------------------------------------
-    wire block_area =
-        (hCount >= BLOCK_X) && (hCount < BLOCK_X + BLOCK_SIZE) &&
-        (vCount >= BLOCK_Y) && (vCount < BLOCK_Y + BLOCK_SIZE);
+    wire [3:0] sprite_row [0:3];
+    wire [3:0] sprite_col [0:3];
+    wire       in_block   [0:3];
+    wire [11:0] color_active [0:3];
+    wire [11:0] color_hit    [0:3];
 
-    wire [3:0] sprite_row = vCount - BLOCK_Y;
-    wire [3:0] sprite_col = hCount - BLOCK_X;
+    generate
+        for (g = 0; g < NUM_BLOCKS; g = g + 1) begin : DRAW
+            assign in_block[g]    = (hCount >= block_x[g]) &&
+                                    (hCount <  block_x[g] + BLOCK_SIZE) &&
+                                    (vCount >= block_y[g]) &&
+                                    (vCount <  block_y[g] + BLOCK_SIZE);
+            assign sprite_row[g]  = vCount - block_y[g];
+            assign sprite_col[g]  = hCount - block_x[g];
 
-    wire [11:0] color_active, color_hit;
+            question_block_rom qb_rom(
+                .clk(clk),
+                .row(sprite_row[g]),
+                .col(sprite_col[g]),
+                .color_data(color_active[g])
+            );
 
-    question_block_rom qb_rom(
-        .clk(clk),
-        .row(sprite_row),
-        .col(sprite_col),
-        .color_data(color_active)
-    );
+            question_block2_rom qb2_rom(
+                .clk(clk),
+                .row(sprite_row[g]),
+                .col(sprite_col[g]),
+                .color_data(color_hit[g])
+            );
+        end
+    endgenerate
 
-    question_block2_rom qb2_rom(
-        .clk(clk),
-        .row(sprite_row),
-        .col(sprite_col),
-        .color_data(color_hit)
-    );
+    // pick active color per block based on been_hit
+    wire [11:0] sprite_color [0:3];
+    generate
+        for (g = 0; g < NUM_BLOCKS; g = g + 1) begin : COLOR_SEL
+            assign sprite_color[g] = been_hit[g] ? color_hit[g] : color_active[g];
+        end
+    endgenerate
 
-    // pick which sprite to show based on been_hit
-    wire [11:0] sprite_color = been_hit ? color_hit : color_active;
-
+    // draw whichever block the current pixel falls inside
     always @(*) begin
+        rgb         = 12'b000000000000;
+        qblock_valid = 1'b0;
         if (~bright) begin
             rgb         = 12'b000000000000;
             qblock_valid = 1'b0;
-        end else if (block_area && sprite_color != 12'b000000000000) begin
-            rgb         = sprite_color;
+        end else if (in_block[0] && sprite_color[0] != 12'b000000000000) begin
+            rgb         = sprite_color[0];
             qblock_valid = 1'b1;
-        end else begin
-            rgb         = 12'b000000000000;
-            qblock_valid = 1'b0;
+        end else if (in_block[1] && sprite_color[1] != 12'b000000000000) begin
+            rgb         = sprite_color[1];
+            qblock_valid = 1'b1;
+        end else if (in_block[2] && sprite_color[2] != 12'b000000000000) begin
+            rgb         = sprite_color[2];
+            qblock_valid = 1'b1;
+        end else if (in_block[3] && sprite_color[3] != 12'b000000000000) begin
+            rgb         = sprite_color[3];
+            qblock_valid = 1'b1;
         end
     end
 

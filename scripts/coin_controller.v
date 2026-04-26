@@ -26,6 +26,7 @@ module coin_controller(
     wire [9:0] coin_x [0:4];
     wire [9:0] coin_y [0:4];
 
+    // TODO: adjust position for each coin as needed. this is just mockup
     assign coin_x[0] = 10'b0011000000;  // 192  — left cluster
     assign coin_y[0] = 10'b0011000000;  // 192
 
