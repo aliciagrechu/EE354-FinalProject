@@ -7,6 +7,14 @@ module mario_controller(
     input btnU, btnL, btnR,
     input [9:0] hCount, vCount,
 
+    // change betwee mario sprites (left, right, jump, slide)
+    input flag_slide,
+    input walk_right,
+    input walk_left,
+    input jump,
+    output reg slide_done,
+    output reg jump done,
+
     // final resolved position fed back from collision modules
     input [9:0] mario_x_final,
     input [9:0] mario_y_final,
@@ -43,6 +51,10 @@ module mario_controller(
     localparam SCREEN_LEFT  = 144; // 0
     localparam SCREEN_RIGHT = 624; // 
 
+    // TODO: flag location, update as needed based on flag_controller 
+    localparam FLAG_SLIDE_X = 570;
+    localparam FLAG_BOTTOM_Y = 400;
+
     // is current pixel inside mario's bounding box?
     wire mario_bound;
     assign mario_bound = (hCount >= mario_x && hCount < mario_x + WIDTH &&
@@ -59,12 +71,38 @@ module mario_controller(
     reg [7:0] respawn_flash_timer;
     reg visible;
     
-    mario_sprite_rom u_rom(
+    // walking vs jumping vs sliding
+    wire [11:0] normal_color;
+    wire [11:0] jump_color;
+    wire [11:0] slide_color;
+
+    mario_sprite_rom normal_rom(
         .clk(clk),
         .row(sprite_y),
         .col(sprite_x),
-        .color_data(sprite_color)
+        .color_data(normal_color)
     );
+
+    mario_sprite_rom jump_rom(
+        .clk(clk),
+        .row(sprite_y),
+        .col(sprite_x),
+        .color_data(jump_color)
+    );
+
+    mario_slide_rom slide_rom(
+        .clk(clk),
+        .row(sprite_y),
+        .col(sprite_x),
+        .color_data(slide_color)
+    );
+
+    // assign correct mario sprite
+    wire [11:0] sprite_color;
+
+    assign sprite_color = flag_slide ? slide_color :
+                        (!grounded) ? jump_color :
+                        normal_color;
 
     // draw
     
@@ -101,6 +139,8 @@ module mario_controller(
         btnU_prev    <= 1'b0;
         respawn_flash_timer <= 1'b0;
         visible <= 1'b1;
+        slide_done <= 1'b0;
+        jump_done <= 1'b0;
     end else begin
         // accept resolved position from collision modules
         btnU_prev <= btnU; 
@@ -112,7 +152,28 @@ module mario_controller(
         mario_x_next <= mario_x_final;
         mario_y_next <= mario_y_final;
 
-        // gravity
+        // flag slide movement
+        if (flag_slide) begin
+            mario_x <= FLAG_SLIDE_X;
+            mario_x_next <= FLAG_SLIDE_X;
+
+            if (mario_y < FLAG_BOTTOM_Y) begin
+                mario_y <= mario_y + 2;
+                mario_y_next <= mario_y + 2;
+                slide_done <= 1'b0;
+            end else begin
+                mario_y <= FLAG_BOTTOM_Y;
+                mario_y_next <= FLAG_BOTTOM_Y;
+                slide_done <= 1'b1;
+            end
+
+            v_y <= 0;
+            jumping <= 1'b0;
+            up <= 1'b0;
+        end else begin
+            slide_done <= 1'b0;
+
+        // gravity / normal movement
         if (!grounded) begin
             if (up) begin
                 if (v_y > 0)

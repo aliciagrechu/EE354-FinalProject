@@ -1,12 +1,15 @@
 `timescale 1 ns / 100 ps
 
-module gameplay_states (Start, Ack, Clk, Reset, Qi, Qp, Qw, Ql, BtnD, marioHitGoombaFlag, respawn);
+module gameplay_states (Start, Ack, Clk, Reset, Qi, Qp, Qw, Ql, BtnD, marioHitGoombaFlag, respawn, flag_slide);
 
 input BtnD;
 input marioHitGoombaFlag;
 input coinCollected;
-input qblockHit,
+input qblockHit;
 input Start, Ack, Clk, Reset;
+input marioTouchFlag;
+input marioSlideDone;
+output reg flag_slide;
 output Qi, Qp, Qw, Ql;
 output reg respawn;
 
@@ -40,6 +43,7 @@ always @(posedge Clk, posedge Reset)
           state <= INI;
           lives <= 2'b11;
           coins <= 3'b000;
+      flag_slide <= 1'b0;
 		  doneFlag <= 1'b0;
 		  respawn_pulse <= 0; 
 		  respawn <= 1'b0;
@@ -61,25 +65,36 @@ always @(posedge Clk, posedge Reset)
                 lives <= 2'b11;
                 coins <= 3'b000;
                 doneFlag <= 1'b0; 
+                flag_slide <= 1'b0;
 	          end
 
 	        PLAY: 
 	          begin
 		        // state transitions in the control unit
-                if(doneFlag == 1'b1)
+                if (doneFlag == 1'b1)
                     state <= WIN;
-                else if(lives == 2'b00)
+                else if (lives == 2'b00)
                     state <= LOSE;
+                else
+                    state <= PLAY;
 
 		        // RTL operations in the Data Path 	
+                if (marioTouchFlag)
+                    flag_slide <= 1'b1;
+
+                if (flag_slide && marioSlideDone)
+                    doneFlag <= 1'b1;
+
                 if(marioHitGoombaFlag && !hitLastFrame && respawn==0)begin
                     lives <= lives - 1;
                     respawn_pulse <= 2'd2;
                     respawn <= 1'b1;  // start immediately
-                end else if (respawn_pulse > 0) begin
+                end 
+                else if (respawn_pulse > 0) begin
                     respawn_pulse <= respawn_pulse - 1;
                     respawn <= 1'b1;
-                end else
+                end 
+                else
                     respawn <= 1'b0;
 
  	          end
@@ -88,8 +103,8 @@ always @(posedge Clk, posedge Reset)
                   coins <= coins + 3'b001;
 
             // increase score if question block is hit (once per block)
-            if (qblockHit)
-                coins <= coins + 3'b001;
+                if (qblockHit)
+                    coins <= coins + 3'b001;
             
             // TODO: IMPLEMENT THE STATE LOGIC / TRANSITIONS FOR THE STATES (i think this is it but check)
 	        WIN	:

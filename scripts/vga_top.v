@@ -80,10 +80,16 @@ module vga_top(
     wire        qblock_hit;  
 	wire [11:0] bg_rgb;
 	wire bg_valid;
+	wire [11:0] flag_rgb;
+	wire flag_valid;
+	wire mario_touching_flag;
+	wire flag_slide;
+	wire mario_slide_done;
 
 	// priority mux — mario on top, then floor, then sky blue background
 	wire [11:0] rgb;
 	assign rgb = (mario_valid) ? mario_rgb :
+				 (flag_valid) ? flag_rgb :
 				 (coin_valid) ? coin_rgb :
 				 (qblock_valid) ? qblock_rgb :
 	             (any_brick_valid) ? any_brick_rgb :
@@ -120,6 +126,17 @@ module vga_top(
         .mario_hit(mario_hit),
         .goomba_valid(goomba_valid)
     );
+	flag_controller flag_inst(
+		.clk(ClkPort),
+		.bright(bright),
+		.hCount(hc),
+		.vCount(vc),
+		.mario_x(mario_x),
+		.mario_y(mario_y),
+		.rgb(flag_rgb),
+		.flag_valid(flag_valid),
+		.mario_touching_flag(mario_touching_flag)
+	);
 
     gameplay_states gs(
         .Clk(move_clk),
@@ -128,6 +145,9 @@ module vga_top(
         .respawn(respawn),
         .Start(1'b0), .Ack(BtnD),
         .marioHitGoombaFlag(mario_hit),  
+		.marioTouchFlag(mario_touching_flag),
+		.marioSlideDone(mario_slide_done),
+		.flag_slide(flag_slide),
 		.qblock_hit(qblock_hit),         
         .Qi(Qi), .Qp(Qp), .Qw(Qw), .Ql(Ql)
     );
@@ -136,6 +156,8 @@ module vga_top(
 		.move_clk(move_clk),
 		.rst(BtnC),
 		.respawn(respawn),
+		.flag_slide(flag_slide),
+    	.slide_done(mario_slide_done),
 		.btnU(BtnU), .btnL(BtnL), .btnR(BtnR),
 		.hCount(hc), .vCount(vc),
 		.mario_x_final(mario_x_final),
