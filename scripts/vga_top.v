@@ -77,7 +77,10 @@ module vga_top(
     wire        coin_valid;     
     wire [11:0] qblock_rgb;    
     wire        qblock_valid;   
-    wire        qblock_hit;     
+    wire        qblock_hit;  
+	wire [11:0] bg_rgb;
+	wire bg_valid;
+
 	// priority mux — mario on top, then floor, then sky blue background
 	wire [11:0] rgb;
 	assign rgb = (mario_valid) ? mario_rgb :
@@ -86,6 +89,7 @@ module vga_top(
 	             (any_brick_valid) ? any_brick_rgb :
 	             (goomba_valid) ? goomba_rgb :
 	             (floor_valid) ? floor_rgb :
+				 (bg_valid) ? bg_rgb :
 	             12'b000000000000; // black
 
 	assign vgaR = rgb[11:8];
@@ -163,6 +167,14 @@ module vga_top(
 		.mario_y_next(mario_y_next),
 		.mario_y_out(mario_y_fc),
 		.on_floor(on_floor)
+	);
+	background_controller bgc(
+		.clk(ClkPort),
+		.bright(bright),
+		.hCount(hc),
+		.vCount(vc),
+		.rgb(bg_rgb),
+		.bg_valid(bg_valid)
 	);
     brick_collision bc(
         .clk(move_clk),
