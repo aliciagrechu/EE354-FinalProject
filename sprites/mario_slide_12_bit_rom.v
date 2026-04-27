@@ -1,16 +1,16 @@
 module mario_slide_rom
 	(
 		input wire clk,
-		input wire [3:0] row,
-		input wire [3:0] col,
+		input wire [4:0] row,
+		input wire [4:0] col,
 		output reg [11:0] color_data
 	);
 
 	(* rom_style = "block" *)
 
 	//signal declaration
-	reg [3:0] row_reg;
-	reg [3:0] col_reg;
+	reg [4:0] row_reg;
+	reg [4:0] col_reg;
 
 	always @(posedge clk)
 		begin
@@ -19,81 +19,156 @@ module mario_slide_rom
 		end
 
 	always @(*) begin
-		if(({row_reg, col_reg}>=8'b00000000) && ({row_reg, col_reg}<8'b00000101)) color_data = 12'b000000000000;
-		if(({row_reg, col_reg}>=8'b00000101) && ({row_reg, col_reg}<8'b00001010)) color_data = 12'b110000100000;
+		if(({row_reg, col_reg}>=10'b0000000000) && ({row_reg, col_reg}<10'b0000001010)) color_data = 12'b000000000000;
+		if(({row_reg, col_reg}>=10'b0000001010) && ({row_reg, col_reg}<10'b0000010100)) color_data = 12'b110000100000;
 
-		if(({row_reg, col_reg}>=8'b00001010) && ({row_reg, col_reg}<8'b00010100)) color_data = 12'b000000000000;
-		if(({row_reg, col_reg}>=8'b00010100) && ({row_reg, col_reg}<8'b00011100)) color_data = 12'b110000100000;
+		if(({row_reg, col_reg}>=10'b0000010100) && ({row_reg, col_reg}<10'b0000101010)) color_data = 12'b000000000000;
+		if(({row_reg, col_reg}>=10'b0000101010) && ({row_reg, col_reg}<10'b0000110100)) color_data = 12'b110000100000;
 
-		if(({row_reg, col_reg}>=8'b00011100) && ({row_reg, col_reg}<8'b00100100)) color_data = 12'b000000000000;
-		if(({row_reg, col_reg}>=8'b00100100) && ({row_reg, col_reg}<8'b00100111)) color_data = 12'b011000110011;
-		if(({row_reg, col_reg}==8'b00100111)) color_data = 12'b110110100110;
-		if(({row_reg, col_reg}==8'b00101000)) color_data = 12'b000000000000;
-		if(({row_reg, col_reg}==8'b00101001)) color_data = 12'b110110100110;
+		if(({row_reg, col_reg}>=10'b0000110100) && ({row_reg, col_reg}<10'b0001001000)) color_data = 12'b000000000000;
+		if(({row_reg, col_reg}>=10'b0001001000) && ({row_reg, col_reg}<10'b0001011000)) color_data = 12'b110000100000;
 
-		if(({row_reg, col_reg}>=8'b00101010) && ({row_reg, col_reg}<8'b00110011)) color_data = 12'b000000000000;
-		if(({row_reg, col_reg}==8'b00110011)) color_data = 12'b011000110011;
-		if(({row_reg, col_reg}==8'b00110100)) color_data = 12'b110110100110;
-		if(({row_reg, col_reg}==8'b00110101)) color_data = 12'b011000110011;
-		if(({row_reg, col_reg}>=8'b00110110) && ({row_reg, col_reg}<8'b00111000)) color_data = 12'b110110100110;
-		if(({row_reg, col_reg}==8'b00111000)) color_data = 12'b000000000000;
-		if(({row_reg, col_reg}>=8'b00111001) && ({row_reg, col_reg}<8'b00111100)) color_data = 12'b110110100110;
+		if(({row_reg, col_reg}>=10'b0001011000) && ({row_reg, col_reg}<10'b0001101000)) color_data = 12'b000000000000;
+		if(({row_reg, col_reg}>=10'b0001101000) && ({row_reg, col_reg}<10'b0001111000)) color_data = 12'b110000100000;
 
-		if(({row_reg, col_reg}>=8'b00111100) && ({row_reg, col_reg}<8'b01000011)) color_data = 12'b000000000000;
-		if(({row_reg, col_reg}==8'b01000011)) color_data = 12'b011000110011;
-		if(({row_reg, col_reg}==8'b01000100)) color_data = 12'b110110100110;
-		if(({row_reg, col_reg}>=8'b01000101) && ({row_reg, col_reg}<8'b01000111)) color_data = 12'b011000110011;
-		if(({row_reg, col_reg}>=8'b01000111) && ({row_reg, col_reg}<8'b01001001)) color_data = 12'b110110100110;
-		if(({row_reg, col_reg}==8'b01001001)) color_data = 12'b011000110011;
-		if(({row_reg, col_reg}>=8'b01001010) && ({row_reg, col_reg}<8'b01001101)) color_data = 12'b110110100110;
+		if(({row_reg, col_reg}>=10'b0001111000) && ({row_reg, col_reg}<10'b0010001000)) color_data = 12'b000000000000;
+		if(({row_reg, col_reg}>=10'b0010001000) && ({row_reg, col_reg}<10'b0010001110)) color_data = 12'b011000110011;
+		if(({row_reg, col_reg}>=10'b0010001110) && ({row_reg, col_reg}<10'b0010010000)) color_data = 12'b110110100110;
+		if(({row_reg, col_reg}>=10'b0010010000) && ({row_reg, col_reg}<10'b0010010010)) color_data = 12'b000000000000;
+		if(({row_reg, col_reg}>=10'b0010010010) && ({row_reg, col_reg}<10'b0010010100)) color_data = 12'b110110100110;
 
-		if(({row_reg, col_reg}>=8'b01001101) && ({row_reg, col_reg}<8'b01010011)) color_data = 12'b000000000000;
-		if(({row_reg, col_reg}>=8'b01010011) && ({row_reg, col_reg}<8'b01010101)) color_data = 12'b011000110011;
-		if(({row_reg, col_reg}>=8'b01010101) && ({row_reg, col_reg}<8'b01011000)) color_data = 12'b110110100110;
-		if(({row_reg, col_reg}>=8'b01011000) && ({row_reg, col_reg}<8'b01011100)) color_data = 12'b011000110011;
+		if(({row_reg, col_reg}>=10'b0010010100) && ({row_reg, col_reg}<10'b0010101000)) color_data = 12'b000000000000;
+		if(({row_reg, col_reg}>=10'b0010101000) && ({row_reg, col_reg}<10'b0010101110)) color_data = 12'b011000110011;
+		if(({row_reg, col_reg}>=10'b0010101110) && ({row_reg, col_reg}<10'b0010110000)) color_data = 12'b110110100110;
+		if(({row_reg, col_reg}>=10'b0010110000) && ({row_reg, col_reg}<10'b0010110010)) color_data = 12'b000000000000;
+		if(({row_reg, col_reg}>=10'b0010110010) && ({row_reg, col_reg}<10'b0010110100)) color_data = 12'b110110100110;
 
-		if(({row_reg, col_reg}>=8'b01011100) && ({row_reg, col_reg}<8'b01100101)) color_data = 12'b000000000000;
-		if(({row_reg, col_reg}>=8'b01100101) && ({row_reg, col_reg}<8'b01101010)) color_data = 12'b110110100110;
+		if(({row_reg, col_reg}>=10'b0010110100) && ({row_reg, col_reg}<10'b0011000110)) color_data = 12'b000000000000;
+		if(({row_reg, col_reg}>=10'b0011000110) && ({row_reg, col_reg}<10'b0011001000)) color_data = 12'b011000110011;
+		if(({row_reg, col_reg}>=10'b0011001000) && ({row_reg, col_reg}<10'b0011001010)) color_data = 12'b110110100110;
+		if(({row_reg, col_reg}>=10'b0011001010) && ({row_reg, col_reg}<10'b0011001100)) color_data = 12'b011000110011;
+		if(({row_reg, col_reg}>=10'b0011001100) && ({row_reg, col_reg}<10'b0011010000)) color_data = 12'b110110100110;
+		if(({row_reg, col_reg}>=10'b0011010000) && ({row_reg, col_reg}<10'b0011010010)) color_data = 12'b000000000000;
+		if(({row_reg, col_reg}>=10'b0011010010) && ({row_reg, col_reg}<10'b0011011000)) color_data = 12'b110110100110;
 
-		if(({row_reg, col_reg}>=8'b01101010) && ({row_reg, col_reg}<8'b01110100)) color_data = 12'b000000000000;
-		if(({row_reg, col_reg}>=8'b01110100) && ({row_reg, col_reg}<8'b01110111)) color_data = 12'b001000001011;
-		if(({row_reg, col_reg}>=8'b01110111) && ({row_reg, col_reg}<8'b01111001)) color_data = 12'b110000100000;
-		if(({row_reg, col_reg}==8'b01111001)) color_data = 12'b001000001011;
+		if(({row_reg, col_reg}>=10'b0011011000) && ({row_reg, col_reg}<10'b0011100110)) color_data = 12'b000000000000;
+		if(({row_reg, col_reg}>=10'b0011100110) && ({row_reg, col_reg}<10'b0011101000)) color_data = 12'b011000110011;
+		if(({row_reg, col_reg}>=10'b0011101000) && ({row_reg, col_reg}<10'b0011101010)) color_data = 12'b110110100110;
+		if(({row_reg, col_reg}>=10'b0011101010) && ({row_reg, col_reg}<10'b0011101100)) color_data = 12'b011000110011;
+		if(({row_reg, col_reg}>=10'b0011101100) && ({row_reg, col_reg}<10'b0011110000)) color_data = 12'b110110100110;
+		if(({row_reg, col_reg}>=10'b0011110000) && ({row_reg, col_reg}<10'b0011110010)) color_data = 12'b000000000000;
+		if(({row_reg, col_reg}>=10'b0011110010) && ({row_reg, col_reg}<10'b0011111000)) color_data = 12'b110110100110;
 
-		if(({row_reg, col_reg}>=8'b01111010) && ({row_reg, col_reg}<8'b10000011)) color_data = 12'b000000000000;
-		if(({row_reg, col_reg}>=8'b10000011) && ({row_reg, col_reg}<8'b10000110)) color_data = 12'b001000001011;
-		if(({row_reg, col_reg}>=8'b10000110) && ({row_reg, col_reg}<8'b10001010)) color_data = 12'b110000100000;
-		if(({row_reg, col_reg}==8'b10001010)) color_data = 12'b001000001011;
+		if(({row_reg, col_reg}>=10'b0011111000) && ({row_reg, col_reg}<10'b0100000110)) color_data = 12'b000000000000;
+		if(({row_reg, col_reg}>=10'b0100000110) && ({row_reg, col_reg}<10'b0100001000)) color_data = 12'b011000110011;
+		if(({row_reg, col_reg}>=10'b0100001000) && ({row_reg, col_reg}<10'b0100001010)) color_data = 12'b110110100110;
+		if(({row_reg, col_reg}>=10'b0100001010) && ({row_reg, col_reg}<10'b0100001110)) color_data = 12'b011000110011;
+		if(({row_reg, col_reg}>=10'b0100001110) && ({row_reg, col_reg}<10'b0100010010)) color_data = 12'b110110100110;
+		if(({row_reg, col_reg}>=10'b0100010010) && ({row_reg, col_reg}<10'b0100010100)) color_data = 12'b011000110011;
+		if(({row_reg, col_reg}>=10'b0100010100) && ({row_reg, col_reg}<10'b0100011010)) color_data = 12'b110110100110;
 
-		if(({row_reg, col_reg}>=8'b10001011) && ({row_reg, col_reg}<8'b10010011)) color_data = 12'b000000000000;
-		if(({row_reg, col_reg}>=8'b10010011) && ({row_reg, col_reg}<8'b10010110)) color_data = 12'b001000001011;
-		if(({row_reg, col_reg}>=8'b10010110) && ({row_reg, col_reg}<8'b10011011)) color_data = 12'b110000100000;
-		if(({row_reg, col_reg}>=8'b10011011) && ({row_reg, col_reg}<8'b10011101)) color_data = 12'b110110100110;
+		if(({row_reg, col_reg}>=10'b0100011010) && ({row_reg, col_reg}<10'b0100100110)) color_data = 12'b000000000000;
+		if(({row_reg, col_reg}>=10'b0100100110) && ({row_reg, col_reg}<10'b0100101000)) color_data = 12'b011000110011;
+		if(({row_reg, col_reg}>=10'b0100101000) && ({row_reg, col_reg}<10'b0100101010)) color_data = 12'b110110100110;
+		if(({row_reg, col_reg}>=10'b0100101010) && ({row_reg, col_reg}<10'b0100101110)) color_data = 12'b011000110011;
+		if(({row_reg, col_reg}>=10'b0100101110) && ({row_reg, col_reg}<10'b0100110010)) color_data = 12'b110110100110;
+		if(({row_reg, col_reg}>=10'b0100110010) && ({row_reg, col_reg}<10'b0100110100)) color_data = 12'b011000110011;
+		if(({row_reg, col_reg}>=10'b0100110100) && ({row_reg, col_reg}<10'b0100111010)) color_data = 12'b110110100110;
 
-		if(({row_reg, col_reg}>=8'b10011101) && ({row_reg, col_reg}<8'b10100011)) color_data = 12'b000000000000;
-		if(({row_reg, col_reg}>=8'b10100011) && ({row_reg, col_reg}<8'b10100111)) color_data = 12'b001000001011;
-		if(({row_reg, col_reg}>=8'b10100111) && ({row_reg, col_reg}<8'b10101010)) color_data = 12'b110000100000;
-		if(({row_reg, col_reg}>=8'b10101010) && ({row_reg, col_reg}<8'b10101101)) color_data = 12'b110110100110;
+		if(({row_reg, col_reg}>=10'b0100111010) && ({row_reg, col_reg}<10'b0101000110)) color_data = 12'b000000000000;
+		if(({row_reg, col_reg}>=10'b0101000110) && ({row_reg, col_reg}<10'b0101001010)) color_data = 12'b011000110011;
+		if(({row_reg, col_reg}>=10'b0101001010) && ({row_reg, col_reg}<10'b0101010000)) color_data = 12'b110110100110;
+		if(({row_reg, col_reg}>=10'b0101010000) && ({row_reg, col_reg}<10'b0101011000)) color_data = 12'b011000110011;
 
-		if(({row_reg, col_reg}>=8'b10101101) && ({row_reg, col_reg}<8'b10110100)) color_data = 12'b000000000000;
-		if(({row_reg, col_reg}>=8'b10110100) && ({row_reg, col_reg}<8'b10111001)) color_data = 12'b001000001011;
-		if(({row_reg, col_reg}==8'b10111001)) color_data = 12'b110000100000;
-		if(({row_reg, col_reg}>=8'b10111010) && ({row_reg, col_reg}<8'b10111100)) color_data = 12'b110110100110;
+		if(({row_reg, col_reg}>=10'b0101011000) && ({row_reg, col_reg}<10'b0101100110)) color_data = 12'b000000000000;
+		if(({row_reg, col_reg}>=10'b0101100110) && ({row_reg, col_reg}<10'b0101101010)) color_data = 12'b011000110011;
+		if(({row_reg, col_reg}>=10'b0101101010) && ({row_reg, col_reg}<10'b0101110000)) color_data = 12'b110110100110;
+		if(({row_reg, col_reg}>=10'b0101110000) && ({row_reg, col_reg}<10'b0101111000)) color_data = 12'b011000110011;
 
-		if(({row_reg, col_reg}>=8'b10111100) && ({row_reg, col_reg}<8'b11000101)) color_data = 12'b000000000000;
-		if(({row_reg, col_reg}>=8'b11000101) && ({row_reg, col_reg}<8'b11001011)) color_data = 12'b001000001011;
-		if(({row_reg, col_reg}==8'b11001011)) color_data = 12'b000000000000;
-		if(({row_reg, col_reg}==8'b11001100)) color_data = 12'b011000110011;
+		if(({row_reg, col_reg}>=10'b0101111000) && ({row_reg, col_reg}<10'b0110001010)) color_data = 12'b000000000000;
+		if(({row_reg, col_reg}>=10'b0110001010) && ({row_reg, col_reg}<10'b0110010100)) color_data = 12'b110110100110;
 
-		if(({row_reg, col_reg}>=8'b11001101) && ({row_reg, col_reg}<8'b11010110)) color_data = 12'b000000000000;
-		if(({row_reg, col_reg}>=8'b11010110) && ({row_reg, col_reg}<8'b11011011)) color_data = 12'b001000001011;
-		if(({row_reg, col_reg}>=8'b11011011) && ({row_reg, col_reg}<8'b11011101)) color_data = 12'b011000110011;
+		if(({row_reg, col_reg}>=10'b0110010100) && ({row_reg, col_reg}<10'b0110101010)) color_data = 12'b000000000000;
+		if(({row_reg, col_reg}>=10'b0110101010) && ({row_reg, col_reg}<10'b0110110100)) color_data = 12'b110110100110;
 
-		if(({row_reg, col_reg}>=8'b11011101) && ({row_reg, col_reg}<8'b11100111)) color_data = 12'b000000000000;
-		if(({row_reg, col_reg}>=8'b11100111) && ({row_reg, col_reg}<8'b11101011)) color_data = 12'b001000001011;
-		if(({row_reg, col_reg}>=8'b11101011) && ({row_reg, col_reg}<8'b11101101)) color_data = 12'b011000110011;
+		if(({row_reg, col_reg}>=10'b0110110100) && ({row_reg, col_reg}<10'b0111001000)) color_data = 12'b000000000000;
+		if(({row_reg, col_reg}>=10'b0111001000) && ({row_reg, col_reg}<10'b0111001110)) color_data = 12'b001000001011;
+		if(({row_reg, col_reg}>=10'b0111001110) && ({row_reg, col_reg}<10'b0111010010)) color_data = 12'b110000100000;
+		if(({row_reg, col_reg}>=10'b0111010010) && ({row_reg, col_reg}<10'b0111010100)) color_data = 12'b001000001011;
+
+		if(({row_reg, col_reg}>=10'b0111010100) && ({row_reg, col_reg}<10'b0111101000)) color_data = 12'b000000000000;
+		if(({row_reg, col_reg}>=10'b0111101000) && ({row_reg, col_reg}<10'b0111101110)) color_data = 12'b001000001011;
+		if(({row_reg, col_reg}>=10'b0111101110) && ({row_reg, col_reg}<10'b0111110010)) color_data = 12'b110000100000;
+		if(({row_reg, col_reg}>=10'b0111110010) && ({row_reg, col_reg}<10'b0111110100)) color_data = 12'b001000001011;
+
+		if(({row_reg, col_reg}>=10'b0111110100) && ({row_reg, col_reg}<10'b1000000110)) color_data = 12'b000000000000;
+		if(({row_reg, col_reg}>=10'b1000000110) && ({row_reg, col_reg}<10'b1000001100)) color_data = 12'b001000001011;
+		if(({row_reg, col_reg}>=10'b1000001100) && ({row_reg, col_reg}<10'b1000010100)) color_data = 12'b110000100000;
+		if(({row_reg, col_reg}>=10'b1000010100) && ({row_reg, col_reg}<10'b1000010110)) color_data = 12'b001000001011;
+
+		if(({row_reg, col_reg}>=10'b1000010110) && ({row_reg, col_reg}<10'b1000100110)) color_data = 12'b000000000000;
+		if(({row_reg, col_reg}>=10'b1000100110) && ({row_reg, col_reg}<10'b1000101100)) color_data = 12'b001000001011;
+		if(({row_reg, col_reg}>=10'b1000101100) && ({row_reg, col_reg}<10'b1000110100)) color_data = 12'b110000100000;
+		if(({row_reg, col_reg}>=10'b1000110100) && ({row_reg, col_reg}<10'b1000110110)) color_data = 12'b001000001011;
+
+		if(({row_reg, col_reg}>=10'b1000110110) && ({row_reg, col_reg}<10'b1001000110)) color_data = 12'b000000000000;
+		if(({row_reg, col_reg}>=10'b1001000110) && ({row_reg, col_reg}<10'b1001001100)) color_data = 12'b001000001011;
+		if(({row_reg, col_reg}>=10'b1001001100) && ({row_reg, col_reg}<10'b1001010110)) color_data = 12'b110000100000;
+		if(({row_reg, col_reg}>=10'b1001010110) && ({row_reg, col_reg}<10'b1001011010)) color_data = 12'b110110100110;
+
+		if(({row_reg, col_reg}>=10'b1001011010) && ({row_reg, col_reg}<10'b1001100110)) color_data = 12'b000000000000;
+		if(({row_reg, col_reg}>=10'b1001100110) && ({row_reg, col_reg}<10'b1001101100)) color_data = 12'b001000001011;
+		if(({row_reg, col_reg}>=10'b1001101100) && ({row_reg, col_reg}<10'b1001110110)) color_data = 12'b110000100000;
+		if(({row_reg, col_reg}>=10'b1001110110) && ({row_reg, col_reg}<10'b1001111010)) color_data = 12'b110110100110;
+
+		if(({row_reg, col_reg}>=10'b1001111010) && ({row_reg, col_reg}<10'b1010000110)) color_data = 12'b000000000000;
+		if(({row_reg, col_reg}>=10'b1010000110) && ({row_reg, col_reg}<10'b1010001110)) color_data = 12'b001000001011;
+		if(({row_reg, col_reg}>=10'b1010001110) && ({row_reg, col_reg}<10'b1010010100)) color_data = 12'b110000100000;
+		if(({row_reg, col_reg}>=10'b1010010100) && ({row_reg, col_reg}<10'b1010011010)) color_data = 12'b110110100110;
+
+		if(({row_reg, col_reg}>=10'b1010011010) && ({row_reg, col_reg}<10'b1010100110)) color_data = 12'b000000000000;
+		if(({row_reg, col_reg}>=10'b1010100110) && ({row_reg, col_reg}<10'b1010101110)) color_data = 12'b001000001011;
+		if(({row_reg, col_reg}>=10'b1010101110) && ({row_reg, col_reg}<10'b1010110100)) color_data = 12'b110000100000;
+		if(({row_reg, col_reg}>=10'b1010110100) && ({row_reg, col_reg}<10'b1010111010)) color_data = 12'b110110100110;
+
+		if(({row_reg, col_reg}>=10'b1010111010) && ({row_reg, col_reg}<10'b1011001000)) color_data = 12'b000000000000;
+		if(({row_reg, col_reg}>=10'b1011001000) && ({row_reg, col_reg}<10'b1011010010)) color_data = 12'b001000001011;
+		if(({row_reg, col_reg}>=10'b1011010010) && ({row_reg, col_reg}<10'b1011010100)) color_data = 12'b110000100000;
+		if(({row_reg, col_reg}>=10'b1011010100) && ({row_reg, col_reg}<10'b1011011000)) color_data = 12'b110110100110;
+
+		if(({row_reg, col_reg}>=10'b1011011000) && ({row_reg, col_reg}<10'b1011101000)) color_data = 12'b000000000000;
+		if(({row_reg, col_reg}>=10'b1011101000) && ({row_reg, col_reg}<10'b1011110010)) color_data = 12'b001000001011;
+		if(({row_reg, col_reg}>=10'b1011110010) && ({row_reg, col_reg}<10'b1011110100)) color_data = 12'b110000100000;
+		if(({row_reg, col_reg}>=10'b1011110100) && ({row_reg, col_reg}<10'b1011111000)) color_data = 12'b110110100110;
+
+		if(({row_reg, col_reg}>=10'b1011111000) && ({row_reg, col_reg}<10'b1100001010)) color_data = 12'b000000000000;
+		if(({row_reg, col_reg}>=10'b1100001010) && ({row_reg, col_reg}<10'b1100010110)) color_data = 12'b001000001011;
+		if(({row_reg, col_reg}>=10'b1100010110) && ({row_reg, col_reg}<10'b1100011000)) color_data = 12'b000000000000;
+		if(({row_reg, col_reg}>=10'b1100011000) && ({row_reg, col_reg}<10'b1100011010)) color_data = 12'b011000110011;
+
+		if(({row_reg, col_reg}>=10'b1100011010) && ({row_reg, col_reg}<10'b1100101010)) color_data = 12'b000000000000;
+		if(({row_reg, col_reg}>=10'b1100101010) && ({row_reg, col_reg}<10'b1100110110)) color_data = 12'b001000001011;
+		if(({row_reg, col_reg}>=10'b1100110110) && ({row_reg, col_reg}<10'b1100111000)) color_data = 12'b000000000000;
+		if(({row_reg, col_reg}>=10'b1100111000) && ({row_reg, col_reg}<10'b1100111010)) color_data = 12'b011000110011;
+
+		if(({row_reg, col_reg}>=10'b1100111010) && ({row_reg, col_reg}<10'b1101001100)) color_data = 12'b000000000000;
+		if(({row_reg, col_reg}>=10'b1101001100) && ({row_reg, col_reg}<10'b1101010110)) color_data = 12'b001000001011;
+		if(({row_reg, col_reg}>=10'b1101010110) && ({row_reg, col_reg}<10'b1101011010)) color_data = 12'b011000110011;
+
+		if(({row_reg, col_reg}>=10'b1101011010) && ({row_reg, col_reg}<10'b1101101100)) color_data = 12'b000000000000;
+		if(({row_reg, col_reg}>=10'b1101101100) && ({row_reg, col_reg}<10'b1101110110)) color_data = 12'b001000001011;
+		if(({row_reg, col_reg}>=10'b1101110110) && ({row_reg, col_reg}<10'b1101111010)) color_data = 12'b011000110011;
+
+		if(({row_reg, col_reg}>=10'b1101111010) && ({row_reg, col_reg}<10'b1110001110)) color_data = 12'b000000000000;
+		if(({row_reg, col_reg}>=10'b1110001110) && ({row_reg, col_reg}<10'b1110010110)) color_data = 12'b001000001011;
+		if(({row_reg, col_reg}>=10'b1110010110) && ({row_reg, col_reg}<10'b1110011010)) color_data = 12'b011000110011;
+
+		if(({row_reg, col_reg}>=10'b1110011010) && ({row_reg, col_reg}<10'b1110101110)) color_data = 12'b000000000000;
+		if(({row_reg, col_reg}>=10'b1110101110) && ({row_reg, col_reg}<10'b1110110110)) color_data = 12'b001000001011;
+		if(({row_reg, col_reg}>=10'b1110110110) && ({row_reg, col_reg}<10'b1110111010)) color_data = 12'b011000110011;
 
 
-		if(({row_reg, col_reg}>=8'b11101101) && ({row_reg, col_reg}<=8'b11111111)) color_data = 12'b000000000000;
+
+		if(({row_reg, col_reg}>=10'b1110111010) && ({row_reg, col_reg}<=10'b1111111111)) color_data = 12'b000000000000;
 	end
 endmodule
