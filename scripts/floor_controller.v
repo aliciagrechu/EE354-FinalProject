@@ -29,7 +29,7 @@ module floor_controller(
 
     // ROM
     wire [11:0] sprite_color;
-    bigger_floor_rom floor_rom_inst(
+    full_floor_rom full_floor_rom_inst(
         .clk(clk),
         .row(sprite_row),
         .col(sprite_col),
