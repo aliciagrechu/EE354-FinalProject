@@ -9,11 +9,9 @@ module mario_controller(
 
     // change betwee mario sprites (left, right, jump, slide)
     input flag_slide,
-    input walk_right,
-    input walk_left,
     input jump,
     output reg slide_done,
-    output reg jump done,
+    output reg jump_done,
 
     // final resolved position fed back from collision modules
     input [9:0] mario_x_final,
@@ -63,27 +61,64 @@ module mario_controller(
     // sprite pixel coordinates
     wire [3:0] sprite_x = hCount - mario_x;
     wire [3:0] sprite_y = vCount - mario_y;
-
-    // ROM
-    wire [11:0] sprite_color;
     
     //goomba collision flash
     reg [7:0] respawn_flash_timer;
     reg visible;
     
     // walking vs jumping vs sliding
-    wire [11:0] normal_color;
+    // wire [11:0] normal_color; again can keep for testing OG mario that WAS showing
     wire [11:0] jump_color;
     wire [11:0] slide_color;
 
-    mario_sprite_rom normal_rom(
+    // walking direction sprites
+    wire [11:0] right_color;
+    wire [11:0] left_color;
+    wire [11:0] walk_right_color;
+    wire [11:0] walk_left_color;
+
+    // walking animation
+    reg [3:0] walk_anim_counter;
+    reg walk_frame;
+    reg facing_left; // only need left reg cuz he faces right by default
+
+    // keep for testing, this is the OG mario that WAS showing up (before 4/26 changes)
+    // mario_sprite_rom normal_rom(
+    //     .clk(clk),
+    //     .row(sprite_y),
+    //     .col(sprite_x),
+    //     .color_data(normal_color)
+    // );
+
+    mario_right_rom right_rom(
         .clk(clk),
         .row(sprite_y),
         .col(sprite_x),
-        .color_data(normal_color)
+        .color_data(right_color)
     );
 
-    mario_sprite_rom jump_rom(
+    mario_left_rom left_rom(
+        .clk(clk),
+        .row(sprite_y),
+        .col(sprite_x),
+        .color_data(left_color)
+    );
+
+    mario_walk_right_rom walk_right_rom(
+        .clk(clk),
+        .row(sprite_y),
+        .col(sprite_x),
+        .color_data(walk_right_color)
+    );
+
+    mario_walk_left_rom walk_left_rom(
+        .clk(clk),
+        .row(sprite_y),
+        .col(sprite_x),
+        .color_data(walk_left_color)
+    );
+
+    mario_jump_rom jump_rom(
         .clk(clk),
         .row(sprite_y),
         .col(sprite_x),
@@ -100,12 +135,16 @@ module mario_controller(
     // assign correct mario sprite
     wire [11:0] sprite_color;
 
-    assign sprite_color = flag_slide ? slide_color :
-                        (!grounded) ? jump_color :
-                        normal_color;
+    // deciding how to draw mario (walk left/right, jump, slide)
+    assign sprite_color =
+        flag_slide ? slide_color :
+        (up) ? jump_color :
+        (btnR && !btnL) ? (walk_frame ? walk_right_color : right_color) :
+        (btnL && !btnR) ? (walk_frame ? walk_left_color : left_color) :
+        (facing_left) ? left_color :
+        right_color;
 
-    // draw
-    
+    // draw mario
     always @(*) begin
         if (~bright || !visible ) begin
             rgb   = 12'b000000000000;
@@ -141,6 +180,10 @@ module mario_controller(
         visible <= 1'b1;
         slide_done <= 1'b0;
         jump_done <= 1'b0;
+        walk_anim_counter <= 1'b0;
+        walk_frame <= 1'b0;
+        facing_left <= 1'b0;
+
     end else begin
         // accept resolved position from collision modules
         btnU_prev <= btnU; 
@@ -157,10 +200,9 @@ module mario_controller(
             mario_x <= FLAG_SLIDE_X;
             mario_x_next <= FLAG_SLIDE_X;
 
-            if (mario_y < FLAG_BOTTOM_Y) begin
-                mario_y <= mario_y + 2;
-                mario_y_next <= mario_y + 2;
-                slide_done <= 1'b0;
+           if (mario_y_final < FLAG_BOTTOM_Y) begin
+                mario_y <= mario_y_final + 2;
+                mario_y_next <= mario_y_final + 2;
             end else begin
                 mario_y <= FLAG_BOTTOM_Y;
                 mario_y_next <= FLAG_BOTTOM_Y;
@@ -216,6 +258,32 @@ module mario_controller(
             mario_x_next <= mario_x_final + 1;
         else if (btnL && !btnR && !blocked_left && mario_x_final > SCREEN_LEFT && respawn_flash_timer == 0)
             mario_x_next <= mario_x_final - 1;
+
+        // after movement happens, check what direction he is walking to animate left / right properly
+        if (btnR && !btnL) begin
+            facing_left <= 1'b0;
+
+            if (walk_anim_counter == 4'd8) begin
+                walk_anim_counter <= 0;
+                walk_frame <= ~walk_frame;
+            end else begin
+                walk_anim_counter <= walk_anim_counter + 1;
+            end
+        end
+        else if (btnL && !btnR) begin
+            facing_left <= 1'b1;
+
+            if (walk_anim_counter == 4'd8) begin
+                walk_anim_counter <= 0;
+                walk_frame <= ~walk_frame;
+            end else begin
+                walk_anim_counter <= walk_anim_counter + 1;
+            end
+        end
+        else begin
+            walk_anim_counter <= 0;
+            walk_frame <= 0;
+        end
 
         
        
