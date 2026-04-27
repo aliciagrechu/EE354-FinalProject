@@ -179,7 +179,7 @@ module mario_controller(
         respawn_flash_timer <= 1'b0;
         visible <= 1'b1;
         slide_done <= 1'b0;
-        jump_done <= 1'b0;
+        //jump_done <= 1'b0;
         walk_anim_counter <= 1'b0;
         walk_frame <= 1'b0;
         facing_left <= 1'b0;
