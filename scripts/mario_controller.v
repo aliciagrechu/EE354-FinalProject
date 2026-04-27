@@ -9,9 +9,9 @@ module mario_controller(
 
     // change betwee mario sprites (left, right, jump, slide)
     input flag_slide,
-    input jump,
+    // input jump,
     output reg slide_done,
-    output reg jump_done,
+    // output reg jump_done,
 
     // final resolved position fed back from collision modules
     input [9:0] mario_x_final,
@@ -284,9 +284,6 @@ module mario_controller(
             walk_anim_counter <= 0;
             walk_frame <= 0;
         end
-
-        
-       
         
         if(respawn)begin
             mario_x       <= 144;
@@ -305,6 +302,7 @@ module mario_controller(
         end else
             visible <= 1'b1;
         end 
+    end
     end
     assign moving_up    = up && (v_y > 0);
     assign moving_down  = !up && (v_y > 0);

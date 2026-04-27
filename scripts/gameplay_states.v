@@ -1,6 +1,15 @@
 `timescale 1 ns / 100 ps
 
-module gameplay_states (Start, Ack, Clk, Reset, Qi, Qp, Qw, Ql, BtnD, marioHitGoombaFlag, respawn, flag_slide);
+module gameplay_states (
+    Start, Ack, Clk, Reset, 
+    Qi, Qp, Qw, Ql, BtnD, 
+    marioHitGoombaFlag, 
+    respawn, 
+    marioTouchFlag,
+    marioSlideDone,
+    coinCollected,
+    qblockHit, flag_slide
+  );
 
 input BtnD;
 input marioHitGoombaFlag;
@@ -34,6 +43,12 @@ always @(posedge Clk or posedge Reset) begin
         hitLastFrame <= 1'b0;
     else
         hitLastFrame <= marioHitGoombaFlag;
+end
+always @(posedge Clk or posedge Reset) begin
+    if (Reset)
+        coinLastFrame <= 1'b0;
+    else
+        coinLastFrame <= coinCollected;
 end
 always @(posedge Clk, posedge Reset) 
 
@@ -97,14 +112,14 @@ always @(posedge Clk, posedge Reset)
                 else
                     respawn <= 1'b0;
 
- 	          end
             // coin collection — only on rising edge
-                if (coin_collected && !coinLastFrame)
+                if (coinCollected && !coinLastFrame)
                   coins <= coins + 3'b001;
 
             // increase score if question block is hit (once per block)
                 if (qblockHit)
                     coins <= coins + 3'b001;
+ 	          end
             
             // TODO: IMPLEMENT THE STATE LOGIC / TRANSITIONS FOR THE STATES (i think this is it but check)
 	        WIN	:
