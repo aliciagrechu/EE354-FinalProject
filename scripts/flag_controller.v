@@ -27,7 +27,7 @@ module flag_controller(
 
     wire [11:0] flag_color;
 
-    flag_rom flag_rom_inst(
+    flag_pole_rom flag_pole_rom_inst(
         .clk(clk),
         .row(flag_row),
         .col(flag_col),
