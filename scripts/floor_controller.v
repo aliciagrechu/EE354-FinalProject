@@ -10,10 +10,10 @@ module floor_controller(
 );
 
     // floor occupies full width, bottom 32 rows
-    // screen is 640x480, so floor is y=[448, 479]
-    parameter FLOOR_Y      = 10'b0111000000; // 448
-    parameter FLOOR_HEIGHT = 10'b0000100000; // 32
-    parameter FLOOR_WIDTH  = 640; // 640
+    // TODO: REDO THIS MATH FOR NEW SIZE: screen is 640x480, so floor is y=[448, 479]
+    parameter FLOOR_Y      = 416;
+    parameter FLOOR_HEIGHT = 64;
+    parameter FLOOR_WIDTH  = 640;
 
     // is current pixel inside the floor?
     wire floor_area;
@@ -22,9 +22,9 @@ module floor_controller(
                         (vCount < FLOOR_Y + FLOOR_HEIGHT);
 
     // local sprite coordinates
-    wire [4:0] sprite_row;
+    wire [5:0] sprite_row;
     wire [9:0] sprite_col;
-    assign sprite_row = vCount - FLOOR_Y;   // 0-31  (5 bits)
+    assign sprite_row = vCount - FLOOR_Y;   // 0-63  (6 bits)
     assign sprite_col = hCount;             // 0-639 (10 bits)
 
     // ROM

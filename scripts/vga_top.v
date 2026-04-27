@@ -37,7 +37,7 @@ module vga_top(
 	wire bright;
 	wire [9:0] hc, vc;
     wire clk25;
-    wire[3:0] v_y;
+    wire[5:0] v_y;
 	// -----------------------------------------------------------------------
 	// Position wires
 	// -----------------------------------------------------------------------
@@ -228,7 +228,7 @@ module vga_top(
 		.mario_moving_up(moving_up),
 		.rgb(qblock_rgb),
 		.qblock_valid(qblock_valid),
-		.qblockHit(qblock_hit)
+		.qblock_hit(qblock_hit)
 	);
 	floor_controller flc(
 		.clk(ClkPort),
@@ -242,7 +242,7 @@ module vga_top(
         .bright(bright),
         .hCount(hc),
         .vCount(vc),
-        .brick_x(312),   // horizontal center (640/2 - 8)
+        .brick_x(288),   // horizontal center (640/2 - 8)
         .brick_y(300),   // vertical center (480/2 - 8)
         .brick_active(1'b1),
         .rgb(brick_rgb0),
@@ -253,7 +253,7 @@ module vga_top(
         .bright(bright),
         .hCount(hc),
         .vCount(vc),
-        .brick_x(328),   // horizontal center (640/2 - 8)
+        .brick_x(320),   // horizontal center (640/2 - 8)
         .brick_y(300),   // vertical center (480/2 - 8)
         .brick_active(1'b1),
         .rgb(brick_rgb1),
@@ -264,7 +264,7 @@ module vga_top(
         .bright(bright),
         .hCount(hc),
         .vCount(vc),
-        .brick_x(344),   // horizontal center (640/2 - 8)
+        .brick_x(352),   // horizontal center (640/2 - 8)
         .brick_y(300),   // vertical center (480/2 - 8)
         .brick_active(1'b1),
         .rgb(brick_rgb2),
@@ -275,7 +275,7 @@ module vga_top(
         .bright(bright),
         .hCount(hc),
         .vCount(vc),
-        .brick_x(360),   // horizontal center (640/2 - 8)
+        .brick_x(384),   // horizontal center (640/2 - 8)
         .brick_y(300),   // vertical center (480/2 - 8)
         .brick_active(1'b1),
         .rgb(brick_rgb3),

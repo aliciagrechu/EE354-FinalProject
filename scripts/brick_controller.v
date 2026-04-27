@@ -37,8 +37,8 @@ module brick_controller(
     output reg [11:0] rgb,
     output reg brick_valid
 );
-    localparam WIDTH  = 16;
-    localparam HEIGHT = 16;
+    localparam WIDTH  = 32;
+    localparam HEIGHT = 32;
 
     // is current pixel inside the brick?
     wire brick_area;
@@ -47,8 +47,8 @@ module brick_controller(
                         (vCount >= brick_y) && (vCount < brick_y + HEIGHT);
 
     // local sprite coordinates
-    wire [3:0] sprite_row = vCount - brick_y;
-    wire [3:0] sprite_col = hCount - brick_x;
+    wire [4:0] sprite_row = vCount - brick_y;
+    wire [4:0] sprite_col = hCount - brick_x;
 
     // ROM
     wire [11:0] sprite_color;

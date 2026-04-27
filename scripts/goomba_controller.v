@@ -11,21 +11,21 @@ module goomba_controller(
     input [9:0] mario_y,
     output reg [11:0] rgb,
     output reg mario_hit,
-    output reg goomba_valid    // ← added here in port list
+    output reg goomba_valid
 );
 
     reg [9:0] goomba_x, goomba_y;
     reg direction;
 
     wire goomba_area;
-    wire [3:0] sprite_row, sprite_col;
+    wire [4:0] sprite_row, sprite_col;
     wire [11:0] sprite_color;
 
-    parameter LEFT_EDGE   = 10'd174;
-    parameter RIGHT_EDGE  = 10'd624;
-    parameter GOOMBA_SIZE = 10'd16;
-    parameter MARIO_W     = 10'd16;
-    parameter MARIO_H     = 10'd16;
+    parameter LEFT_EDGE   = 174;
+    parameter RIGHT_EDGE  = 624;
+    parameter GOOMBA_SIZE = 32;
+    parameter MARIO_W     = 32;
+    parameter MARIO_H     = 32;
 
     assign goomba_area =
         (hCount >= goomba_x) && (hCount < goomba_x + GOOMBA_SIZE) &&
@@ -44,20 +44,20 @@ module goomba_controller(
     // movement
     always @(posedge move_clk or posedge rst) begin
         if (rst) begin
-            goomba_x  <= 10'd300;
-            goomba_y  <= 10'd432;
+            goomba_x  <= 300;
+            goomba_y  <= 384;
             direction <= 1'b0;
         end else begin
             if (direction == 1'b0) begin
                 if (goomba_x + GOOMBA_SIZE >= RIGHT_EDGE)
                     direction <= 1'b1;
                 else
-                    goomba_x <= goomba_x + 10'd1;
+                    goomba_x <= goomba_x + 1;
             end else begin
                 if (goomba_x <= LEFT_EDGE)
                     direction <= 1'b0;
                 else
-                    goomba_x <= goomba_x - 10'd1;
+                    goomba_x <= goomba_x - 1;
             end
         end
     end

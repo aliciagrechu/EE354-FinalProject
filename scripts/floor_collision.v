@@ -32,8 +32,8 @@ module floor_collision (
     // -----------------------------------------------------------------------
     parameter SCREEN_HEIGHT  = 480;
     parameter SCREEN_WIDTH   = 640;
-    parameter FLOOR_HEIGHT   = 32;       // floor block is 32px tall
-    parameter MARIO_HEIGHT   = 16;       // Mario sprite height in pixels
+    parameter FLOOR_HEIGHT   = 64;      
+    parameter MARIO_HEIGHT   = 32;      
 
     // Floor top edge: floor occupies rows [FLOOR_TOP, SCREEN_HEIGHT-1]
     localparam FLOOR_TOP = SCREEN_HEIGHT - FLOOR_HEIGHT;   // = 448

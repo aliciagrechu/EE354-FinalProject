@@ -20,18 +20,18 @@ module brick_collision (
     output reg         blocked_right
 );
 
-    parameter MARIO_WIDTH  = 16;
-    parameter MARIO_HEIGHT = 16;
-    parameter BRICK_SIZE   = 16;
+    parameter MARIO_WIDTH  = 32;
+    parameter MARIO_HEIGHT = 32;
+    parameter BRICK_SIZE   = 32;
 
     // hardcode your brick positions here
     localparam NUM_BRICKS = 4;
     wire [9:0] brick_x [0:NUM_BRICKS-1];
     wire [9:0] brick_y [0:NUM_BRICKS-1];
-    assign brick_x[0] = 10'd312; assign brick_y[0] = 10'd300;
-    assign brick_x[1] = 10'd328; assign brick_y[1] = 10'd300;
-    assign brick_x[2] = 10'd344; assign brick_y[2] = 10'd300;
-    assign brick_x[3] = 10'd360; assign brick_y[3] = 10'd300;
+    assign brick_x[0] = 288; assign brick_y[0] = 300;
+    assign brick_x[1] = 320; assign brick_y[1] = 300;
+    assign brick_x[2] = 352; assign brick_y[2] = 300;
+    assign brick_x[3] = 384; assign brick_y[3] = 300;
 
     wire [9:0] mario_right_cur  = mario_x + MARIO_WIDTH  - 1;
     wire [9:0] mario_bottom_cur = mario_y + MARIO_HEIGHT - 1;

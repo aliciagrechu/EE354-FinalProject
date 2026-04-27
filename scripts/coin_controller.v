@@ -14,9 +14,9 @@ module coin_controller(
     output reg coin_collected    // pulses high when mario touches a coin
 );
 
-    parameter COIN_SIZE  = 10'b0000010000;  // 16
-    parameter MARIO_W    = 10'b0000010000;  // 16
-    parameter MARIO_H    = 10'b0000010000;  // 16
+    parameter COIN_SIZE  = 32;
+    parameter MARIO_W    = 32;
+    parameter MARIO_H    = 32;
     parameter NUM_COINS  = 5;
 
     // -----------------------------------------------------------------------
@@ -91,8 +91,8 @@ module coin_controller(
     // Instead we check which coin the current pixel belongs to
     // and only read from one ROM (coins don't overlap so only one fires)
 
-    wire [3:0] sprite_row [0:4];
-    wire [3:0] sprite_col [0:4];
+    wire [4:0] sprite_row [0:4];
+    wire [4:0] sprite_col [0:4];
     wire       in_coin    [0:4];
     wire [11:0] coin_color [0:4];
 

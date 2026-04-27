@@ -12,18 +12,18 @@ module flag_controller(
     // TO DO: update X,Y location of flag as needed, this is just a mockup
     localparam FLAG_X = 580;
     localparam FLAG_Y = 160;
-    localparam FLAG_W = 32;
-    localparam FLAG_H = 256;
+    localparam FLAG_W = 48;
+    localparam FLAG_H = 360;
 
-    localparam MARIO_W = 16;
-    localparam MARIO_H = 16;
+    localparam MARIO_W = 32;
+    localparam MARIO_H = 32;
 
     wire flag_bound =
         hCount >= FLAG_X && hCount < FLAG_X + FLAG_W &&
         vCount >= FLAG_Y && vCount < FLAG_Y + FLAG_H;
 
-    wire [7:0] flag_row = vCount - FLAG_Y;
-    wire [4:0] flag_col = hCount - FLAG_X;
+    wire [8:0] flag_row = vCount - FLAG_Y;
+    wire [5:0] flag_col = hCount - FLAG_X;
 
     wire [11:0] flag_color;
 

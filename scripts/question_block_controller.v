@@ -15,9 +15,9 @@ module question_block_controller(
     output reg        qblock_hit
 );
 
-    parameter BLOCK_SIZE = 10'd16;
-    parameter MARIO_W    = 10'd16;
-    parameter MARIO_H    = 10'd16;
+    parameter BLOCK_SIZE = 32;
+    parameter MARIO_W    = 32;
+    parameter MARIO_H    = 32;
     parameter NUM_BLOCKS = 4;
 
     // -----------------------------------------------------------------------
@@ -28,17 +28,17 @@ module question_block_controller(
     wire [9:0] block_y [0:3];
 
     // TODO: adjust position for block coin as needed. this is just mockup
-    assign block_x[0] = 10'd288;  // TODO: adjust — higher up center block
-    assign block_y[0] = 10'd200;  // TODO: adjust — higher up center block
+    assign block_x[0] = 288;  // TODO: adjust — higher up center block
+    assign block_y[0] = 200;  // TODO: adjust — higher up center block
 
-    assign block_x[1] = 10'd272;  // TODO: adjust — middle left question block
-    assign block_y[1] = 10'd270;  // TODO: adjust — middle row
+    assign block_x[1] = 272;  // TODO: adjust — middle left question block
+    assign block_y[1] = 270;  // TODO: adjust — middle row
 
-    assign block_x[2] = 10'd304;  // TODO: adjust — middle right question block
-    assign block_y[2] = 10'd270;  // TODO: adjust — middle row
+    assign block_x[2] = 304;  // TODO: adjust — middle right question block
+    assign block_y[2] = 270;  // TODO: adjust — middle row
 
-    assign block_x[3] = 10'd400;  // TODO: adjust — right side question block
-    assign block_y[3] = 10'd270;  // TODO: adjust — right of brick platform
+    assign block_x[3] = 400;  // TODO: adjust — right side question block
+    assign block_y[3] = 270;  // TODO: adjust — right of brick platform
 
     // -----------------------------------------------------------------------
     // Per-block been_hit state
@@ -85,8 +85,8 @@ module question_block_controller(
     // -----------------------------------------------------------------------
     // Drawing — one ROM pair per block
     // -----------------------------------------------------------------------
-    wire [3:0] sprite_row [0:3];
-    wire [3:0] sprite_col [0:3];
+    wire [4:0] sprite_row [0:3];
+    wire [4:0] sprite_col [0:3];
     wire       in_block   [0:3];
     wire [11:0] color_active [0:3];
     wire [11:0] color_hit    [0:3];

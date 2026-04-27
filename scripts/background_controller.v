@@ -16,7 +16,7 @@ module background_controller(
 
     wire [11:0] bg_color;
 
-    new_background1_sky_nofloor_rom bg_rom(
+    background_1_rom bg_rom(
         .clk(clk),
         .row(sprite_row),
         .col(sprite_col),

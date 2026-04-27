@@ -42,8 +42,8 @@ module mario_controller(
 );
 
     // sprite size
-    localparam WIDTH        = 16; // 16
-    localparam HEIGHT       = 16; // 16
+    localparam WIDTH        = 32;
+    localparam HEIGHT       = 32;
 
     // screen bounds
     localparam SCREEN_LEFT  = 144; // 0
@@ -59,8 +59,8 @@ module mario_controller(
                           vCount >= mario_y && vCount < mario_y + HEIGHT);
 
     // sprite pixel coordinates
-    wire [3:0] sprite_x = hCount - mario_x;
-    wire [3:0] sprite_y = vCount - mario_y;
+    wire [4:0] sprite_x = hCount - mario_x;
+    wire [4:0] sprite_y = vCount - mario_y;
     
     //goomba collision flash
     reg [7:0] respawn_flash_timer;
@@ -169,9 +169,9 @@ module mario_controller(
     always @(posedge move_clk or posedge rst) begin
     if (rst) begin
         mario_x      <= 144;
-        mario_y      <= 432;
+        mario_y      <= 384;
         mario_x_next <= 144;
-        mario_y_next <= 432;
+        mario_y_next <= 384;
         v_y          <= 0;
         jumping      <= 1'b0;
         up           <= 1'b0;
@@ -290,9 +290,9 @@ module mario_controller(
         
         if(respawn)begin
             mario_x       <= 144;
-            mario_y       <= 432;
+            mario_y       <= 384;
             mario_x_next  <= 144;
-            mario_y_next  <= 432;
+            mario_y_next  <= 384;
             v_y           <= 0;
             jumping       <= 1'b0;
             up            <= 1'b0;
