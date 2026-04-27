@@ -148,7 +148,7 @@ module vga_top(
 		.marioTouchFlag(mario_touching_flag),
 		.marioSlideDone(mario_slide_done),
 		.flag_slide(flag_slide),
-		.qblock_hit(qblock_hit),         
+		.qblockHit(qblock_hit),         
         .Qi(Qi), .Qp(Qp), .Qw(Qw), .Ql(Ql)
     );
 	mario_controller mc(
