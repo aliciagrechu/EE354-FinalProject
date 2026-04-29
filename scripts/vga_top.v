@@ -85,7 +85,9 @@ module vga_top(
 	wire mario_touching_flag;
 	wire flag_slide;
 	wire mario_slide_done;
-
+    wire scroll_next;
+    wire coin_collected;
+    wire [2:0] coin_count;
 	// priority mux — mario on top, then floor, then sky blue background
 	wire [11:0] rgb;
 	assign rgb = (mario_valid) ? mario_rgb :
@@ -126,17 +128,31 @@ module vga_top(
         .mario_hit(mario_hit),
         .goomba_valid(goomba_valid)
     );
-	flag_controller flag_inst(
-		.clk(ClkPort),
-		.bright(bright),
-		.hCount(hc),
-		.vCount(vc),
-		.mario_x(mario_x),
-		.mario_y(mario_y),
-		.rgb(flag_rgb),
-		.flag_valid(flag_valid),
-		.mario_touching_flag(mario_touching_flag)
-	);
+	//flag_controller flag_inst(
+	//	.clk(ClkPort),
+	//	.bright(bright),
+	//	.hCount(hc),
+	//	.vCount(vc),
+	//	.mario_x(mario_x),
+	//	.mario_y(mario_y),
+	//	.rgb(flag_rgb),
+	//	.flag_valid(flag_valid),
+	//	.mario_touching_flag(mario_touching_flag)
+	//);
+	coin_controller cc(
+        .clk(ClkPort),
+        .move_clk(move_clk),
+        .bright(bright),
+        .rst(BtnC),
+        .hCount(hc),
+        .vCount(vc),
+        .mario_x(mario_x),
+        .mario_y(mario_y),
+        .rgb(coin_rgb),
+        .coin_valid(coin_valid),
+        .coin_collected(coin_collected),
+        .coin_count(coin_count)
+    );
 
     gameplay_states gs(
         .Clk(move_clk),
@@ -178,7 +194,8 @@ module vga_top(
 		.rgb(mario_rgb),
 		.valid(mario_valid),
 		.bright(bright),
-		.v_y(v_y)
+		.v_y(v_y),
+		.scroll_next(scroll_next)
 	);
 
 	floor_collision fc(
@@ -196,7 +213,8 @@ module vga_top(
 		.hCount(hc),
 		.vCount(vc),
 		.rgb(bg_rgb),
-		.bg_valid(bg_valid)
+		.bg_valid(bg_valid),
+		.scroll_next(scroll_next)
 	);
     brick_collision bc(
         .clk(move_clk),
@@ -253,7 +271,7 @@ module vga_top(
         .bright(bright),
         .hCount(hc),
         .vCount(vc),
-        .brick_x(320),   // horizontal center (640/2 - 8)
+        .brick_x(352),   // horizontal center (640/2 - 8)
         .brick_y(300),   // vertical center (480/2 - 8)
         .brick_active(1'b1),
         .rgb(brick_rgb1),
@@ -264,24 +282,13 @@ module vga_top(
         .bright(bright),
         .hCount(hc),
         .vCount(vc),
-        .brick_x(352),   // horizontal center (640/2 - 8)
+        .brick_x(416),   // horizontal center (640/2 - 8)
         .brick_y(300),   // vertical center (480/2 - 8)
         .brick_active(1'b1),
         .rgb(brick_rgb2),
         .brick_valid(brick_valid2)
     );
-    brick_controller brick_inst3(
-        .clk(ClkPort),
-        .bright(bright),
-        .hCount(hc),
-        .vCount(vc),
-        .brick_x(384),   // horizontal center (640/2 - 8)
-        .brick_y(300),   // vertical center (480/2 - 8)
-        .brick_active(1'b1),
-        .rgb(brick_rgb3),
-        .brick_valid(brick_valid3)
-    );
-
+    
 	// -----------------------------------------------------------------------
 	// SSD — displaying mario_x on SSD for debug
 	// -----------------------------------------------------------------------
@@ -295,7 +302,7 @@ module vga_top(
 	assign SSD2 = 4'b0000;
 	// in vga_top temporarily
     assign SSD1 = {3'b0, on_floor};  // shows 0 or 1
-    assign SSD0 = v_y[3:0];          // shows current velocity
+    assign SSD0 = {1'b0, coin_count};          // shows current velocity
 
 	assign ssdscan_clk = DIV_CLK[19:18];
 	assign An0 = !(~ssdscan_clk[1] && ~ssdscan_clk[0]);

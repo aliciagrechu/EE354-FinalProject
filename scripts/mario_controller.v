@@ -38,7 +38,8 @@ module mario_controller(
 
     // drawing
     output reg [11:0] rgb,
-    output reg valid
+    output reg valid,
+    output reg scroll_next
 );
 
     // sprite size
@@ -81,7 +82,7 @@ module mario_controller(
     reg [3:0] walk_anim_counter;
     reg walk_frame;
     reg facing_left; // only need left reg cuz he faces right by default
-
+    
     // keep for testing, this is the OG mario that WAS showing up (before 4/26 changes)
     // mario_sprite_rom normal_rom(
     //     .clk(clk),
@@ -302,6 +303,15 @@ module mario_controller(
         end else
             visible <= 1'b1;
         end 
+         if(mario_x_final == SCREEN_RIGHT)begin
+            scroll_next <= 1'b1;
+            mario_x      <= 144;
+            mario_y      <= 432;
+            mario_x_next <= 144;
+            mario_y_next <= 432;
+          end
+        else
+            scroll_next <= 1'b0;
     end
     end
     assign moving_up    = up && (v_y > 0);

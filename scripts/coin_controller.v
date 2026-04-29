@@ -11,6 +11,7 @@ module coin_controller(
     input [9:0] mario_y,
     output reg [11:0] rgb,
     output reg coin_valid,
+    output reg [2:0] coin_count,
     output reg coin_collected    // pulses high when mario touches a coin
 );
 
@@ -27,20 +28,20 @@ module coin_controller(
     wire [9:0] coin_y [0:4];
 
     // TODO: adjust position for each coin as needed. this is just mockup
-    assign coin_x[0] = 10'b0011000000;  // 192  — left cluster
-    assign coin_y[0] = 10'b0011000000;  // 192
+    assign coin_x[0] = 200;  // 192  — left cluster
+    assign coin_y[0] = 250;  // 192
 
-    assign coin_x[1] = 10'b0100000000;  // 256  — left cluster
-    assign coin_y[1] = 10'b0011000000;  // 192
+    assign coin_x[1] = 288;  // 256  — left cluster
+    assign coin_y[1] = 250;  // 192
 
-    assign coin_x[2] = 10'b0101000000;  // 320  — center
-    assign coin_y[2] = 10'b0010100000;  // 160  — slightly higher
+    assign coin_x[2] = 352;  // 320  — center
+    assign coin_y[2] = 150;  // 160  — slightly higher
 
-    assign coin_x[3] = 10'b0110000000;  // 384  — right cluster
-    assign coin_y[3] = 10'b0011000000;  // 192
+    assign coin_x[3] = 352;  // 384  — right cluster
+    assign coin_y[3] = 250;  // 192
 
-    assign coin_x[4] = 10'b0111000000;  // 448  — right cluster
-    assign coin_y[4] = 10'b0011000000;  // 192
+    assign coin_x[4] = 416;  // 448  — right cluster
+    assign coin_y[4] = 250;  // 192
 
     // -----------------------------------------------------------------------
     // Collected flags — one per coin
@@ -72,12 +73,14 @@ module coin_controller(
             collected     <= 5'b00000;
             touching_last <= 5'b00000;
             coin_collected <= 1'b0;
+            coin_count <= 3'b0;
         end else begin
             touching_last  <= touching;
             coin_collected <= 1'b0;   // default low
             for (i = 0; i < NUM_COINS; i = i + 1) begin
                 if (touching[i] && !touching_last[i]) begin
                     collected[i]   <= 1'b1;
+                    coin_count <= coin_count + 1'b1;
                     coin_collected <= 1'b1;   // pulse high for one cycle
                 end
             end
@@ -107,7 +110,7 @@ module coin_controller(
             assign sprite_row[g] = vCount - coin_y[g];
             assign sprite_col[g] = hCount - coin_x[g];
 
-            coin_rom coin_rom_inst (
+            coin_1_rom coin_rom_inst (
                 .clk(clk),
                 .row(sprite_row[g]),
                 .col(sprite_col[g]),

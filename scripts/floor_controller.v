@@ -16,8 +16,11 @@ module floor_controller(
     parameter FLOOR_WIDTH  = 640;
 
     // is current pixel inside the floor?
+    wire [9:0] floor_x = hCount - 144;
     wire floor_area;
-    assign floor_area = (hCount < FLOOR_WIDTH) &&
+    assign floor_area = (hCount >= 10'd144) &&
+                        (hCount < 10'd784) &&
+                        (floor_x < FLOOR_WIDTH) &&
                         (vCount >= FLOOR_Y) &&
                         (vCount < FLOOR_Y + FLOOR_HEIGHT);
 
@@ -25,7 +28,7 @@ module floor_controller(
     wire [5:0] sprite_row;
     wire [9:0] sprite_col;
     assign sprite_row = vCount - FLOOR_Y;   // 0-63  (6 bits)
-    assign sprite_col = hCount;             // 0-639 (10 bits)
+    assign sprite_col = floor_x;             // 0-639 (10 bits)
 
     // ROM
     wire [11:0] sprite_color;

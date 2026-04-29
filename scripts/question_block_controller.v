@@ -28,17 +28,17 @@ module question_block_controller(
     wire [9:0] block_y [0:3];
 
     // TODO: adjust position for block coin as needed. this is just mockup
-    assign block_x[0] = 288;  // TODO: adjust — higher up center block
-    assign block_y[0] = 200;  // TODO: adjust — higher up center block
+    assign block_x[0] = 200;  // TODO: adjust — higher up center block
+    assign block_y[0] = 300;  // TODO: adjust — higher up center block
 
-    assign block_x[1] = 272;  // TODO: adjust — middle left question block
-    assign block_y[1] = 270;  // TODO: adjust — middle row
+    assign block_x[1] = 320;  // TODO: adjust — middle left question block
+    assign block_y[1] = 300;  // TODO: adjust — middle row
 
-    assign block_x[2] = 304;  // TODO: adjust — middle right question block
-    assign block_y[2] = 270;  // TODO: adjust — middle row
+    assign block_x[2] = 352;  // TODO: adjust — middle right question block
+    assign block_y[2] = 200;  // TODO: adjust — middle row
 
-    assign block_x[3] = 400;  // TODO: adjust — right side question block
-    assign block_y[3] = 270;  // TODO: adjust — right of brick platform
+    assign block_x[3] = 384;  // TODO: adjust — right side question block
+    assign block_y[3] = 300;  // TODO: adjust — right of brick platform
 
     // -----------------------------------------------------------------------
     // Per-block been_hit state
