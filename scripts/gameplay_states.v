@@ -18,7 +18,7 @@ input qblockHit;
 input Start, Ack, Clk, Reset;
 input marioTouchFlag;
 input marioSlideDone;
-input fellInPit,
+input fellInPit;
 
 output reg flag_slide;
 output Qi, Qp, Qw, Ql;

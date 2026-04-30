@@ -5,8 +5,10 @@ module background_controller(
     input  wire        bright,
     input  wire [9:0]  hCount,
     input  wire [9:0]  vCount,
-    input  wire     in_scene2,
+    
+    input wire scroll_next,
     output reg  [11:0] rgb,
+    output reg     in_scene2,
     output wire        bg_valid
 );
 
@@ -18,6 +20,8 @@ module background_controller(
     always @(posedge clk) begin
         if (scroll_next)
             in_scene2 <= 1'b1;
+        else
+            in_scene2 <= 1'b0;
     end
 
     // -----------------------------------------------------------------------

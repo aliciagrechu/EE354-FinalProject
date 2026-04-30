@@ -304,9 +304,10 @@ module vga_top(
         .bright     (bright),
         .hCount     (hc),
         .vCount     (vc),
-        .in_scene2(in_scene2)
-        .rgb        (bg_rgb),
-        .bg_valid   (bg_valid)
+        .in_scene2(in_scene2),
+        .rgb(bg_rgb),
+        .bg_valid   (bg_valid),
+        .scroll_next(scroll_next)
     );
 
     question_block_controller qbc(
