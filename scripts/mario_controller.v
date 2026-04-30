@@ -63,7 +63,7 @@ module mario_controller(
     // for gap / death pit between staircases
     localparam PIT_LEFT  = 272;  // = LEFT_X + STAIR_W
     localparam PIT_RIGHT = 400;  // = RIGHT_X
-    localparam PIT_DEATH_Y = 480; // bottom of screen
+    localparam PIT_DEATH_Y = 460; // bottom of screen
 
 
     // is current pixel inside mario's bounding box?

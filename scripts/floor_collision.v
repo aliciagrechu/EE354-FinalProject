@@ -1,77 +1,73 @@
+`timescale 1ns / 1ps
+
 // floor_collision.v
-// Handles Mario's collision with the floor (640x32 block at bottom of screen)
-// Screen: 640x480. Floor occupies y=[448, 479] (32px tall, full width).
+// Handles Mario's collision with the floor.
 //
-// Usage: instantiate alongside mario_controller.v
-// mario_controller feeds mario_y_next (proposed next Y position),
-// this module outputs mario_y (clamped, collision-resolved Y)
-// and on_floor (high when Mario is standing on the floor).
+// Scene 1: full-width floor at y=448
+// Scene 2: two floor segments with a gap between the staircases
+//   Left  segment: x = 144–271
+//   Right segment: x = 400–623
+//   Gap           : x = 272–399 — no floor, Mario falls through
 
 module floor_collision (
     input  wire        clk,
     input  wire        rst,
 
-    // Mario's current bounding box (top-left corner)
-    input  wire [9:0]  mario_x,          // current X (not needed for floor, but useful for future)
-    input  wire [9:0]  mario_y,          // current Y (top of Mario sprite)
+    input  wire        in_scene2,        // NEW: scene selector
 
-    // Proposed next position from mario_controller (after gravity/jump applied)
+    input  wire [9:0]  mario_x,
+    input  wire [9:0]  mario_y,
     input  wire [9:0]  mario_y_next,
 
-    // Mario sprite height (typically 32px for SMB)
-    // Parameterized so you can swap sprite sizes easily
-    // Mario bottom = mario_y + MARIO_HEIGHT - 1
-
-    // Outputs
-    output wire  [9:0]  mario_y_out,      // collision-resolved Y position
-    output wire         on_floor          // 1 = Mario is standing on floor
+    output wire [9:0]  mario_y_out,
+    output wire        on_floor
 );
 
-    // -----------------------------------------------------------------------
-    // Parameters — adjust to match your sprite and screen layout
-    // -----------------------------------------------------------------------
-    parameter SCREEN_HEIGHT  = 480;
-    parameter SCREEN_WIDTH   = 640;
-    parameter FLOOR_HEIGHT   = 64;      
-    parameter MARIO_HEIGHT   = 32;      
+    parameter SCREEN_HEIGHT = 480;
+    parameter SCREEN_WIDTH  = 640;
+    parameter FLOOR_HEIGHT  = 64;
+    parameter MARIO_HEIGHT  = 32;
+    parameter MARIO_WIDTH   = 32;
 
-    // Floor top edge: floor occupies rows [FLOOR_TOP, SCREEN_HEIGHT-1]
-    localparam FLOOR_TOP = SCREEN_HEIGHT - FLOOR_HEIGHT;   // = 448
-
-    // The Y position where Mario's feet rest ON the floor
-    // mario_y is top-left, so feet = mario_y + MARIO_HEIGHT
-    // Standing position: feet == FLOOR_TOP  =>  mario_y == FLOOR_TOP - MARIO_HEIGHT
-    localparam MARIO_STAND_Y = FLOOR_TOP - MARIO_HEIGHT;   // = 416
+    localparam FLOOR_TOP     = SCREEN_HEIGHT - FLOOR_HEIGHT;  // 448
+    localparam MARIO_STAND_Y = FLOOR_TOP - MARIO_HEIGHT;      // 416
 
     // -----------------------------------------------------------------------
-    // Collision logic (combinational first, then registered)
+    // Scene 2 floor segment x ranges — must match floor_controller_scene2
+    // and staircase_controller localparams
     // -----------------------------------------------------------------------
-    wire [9:0] mario_bottom_next;
-    assign mario_bottom_next = mario_y_next + MARIO_HEIGHT;
+    localparam LEFT_FLOOR_X_MIN  = 10'd144;
+    localparam LEFT_FLOOR_X_MAX  = 10'd272;   // LEFT_X + STAIR_W
+    localparam RIGHT_FLOOR_X_MIN = 10'd400;   // RIGHT_X
+    localparam RIGHT_FLOOR_X_MAX = 10'd624;
 
-    // Detect if the proposed next position would penetrate the floor
-    wire floor_collision_detected;
-    assign floor_collision_detected = (mario_bottom_next >= FLOOR_TOP);
-    // replace the always block with pure assigns
-    assign mario_y_out = floor_collision_detected ? MARIO_STAND_Y : mario_y_next;
-    assign on_floor    = floor_collision_detected;
     // -----------------------------------------------------------------------
-    // Output register — update every clock cycle
+    // Is Mario's x position over a valid floor segment in scene 2?
+    // Use Mario's center x for the check to feel natural
     // -----------------------------------------------------------------------
-//    always @(posedge clk or posedge rst) begin
-//        if (rst) begin
-//            mario_y_out <= MARIO_STAND_Y;  // spawn Mario standing on floor
-//            on_floor    <= 1'b1;
-//        end else begin
-//            if (floor_collision_detected) begin
-//                // Clamp Mario so his feet sit exactly on the floor top edge
-//                mario_y_out <= MARIO_STAND_Y;
-//                on_floor    <= 1'b1;
-//            end else begin
-//                mario_y_out <= mario_y_next;
-//                on_floor    <= 1'b0;
-//            end
-//        end
-//    end
+    wire [9:0] mario_center_x = mario_x + (MARIO_WIDTH / 2);
+
+    wire on_left_segment  = (mario_center_x >= LEFT_FLOOR_X_MIN) &&
+                            (mario_center_x <  LEFT_FLOOR_X_MAX);
+
+    wire on_right_segment = (mario_center_x >= RIGHT_FLOOR_X_MIN) &&
+                            (mario_center_x <  RIGHT_FLOOR_X_MAX);
+
+    // In scene 1 the full floor is always valid.
+    // In scene 2 only the two segments count.
+    wire over_valid_floor = !in_scene2 ||
+                            on_left_segment ||
+                            on_right_segment;
+
+    // -----------------------------------------------------------------------
+    // Collision logic — combinational
+    // -----------------------------------------------------------------------
+    wire mario_bottom_next = mario_y_next + MARIO_HEIGHT;
+
+    wire floor_hit = over_valid_floor &&
+                     (mario_y_next + MARIO_HEIGHT >= FLOOR_TOP);
+
+    assign mario_y_out = floor_hit ? MARIO_STAND_Y : mario_y_next;
+    assign on_floor    = floor_hit;
 
 endmodule

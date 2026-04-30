@@ -36,7 +36,7 @@ module vga_top(
     // Scene register
     // -----------------------------------------------------------------------
     reg in_scene2;
-    always @(posedge move_clk or posedge Reset) begin
+    always @(posedge ClkPort or posedge Reset) begin
         if (Reset)       in_scene2 <= 1'b0;
         else if (scroll_next) in_scene2 <= 1'b1;
     end
@@ -94,8 +94,8 @@ module vga_top(
     // -----------------------------------------------------------------------
     // RGB wires
     // -----------------------------------------------------------------------
-    wire [11:0] mario_rgb, floor_rgb, bg_rgb;
-    wire        mario_valid, floor_valid, bg_valid;
+    wire [11:0] mario_rgb, floor_rgb, floor2_rgb, bg_rgb;
+    wire        mario_valid, floor_valid, floor2_valid, bg_valid;
 
     wire mario_hit;
     wire [11:0] goomba_rgb;
@@ -122,7 +122,6 @@ module vga_top(
     wire        stair_valid;
 
     wire scroll_next;
-	wire fell_in_pit;
 
     // -----------------------------------------------------------------------
     // Priority RGB mux
@@ -138,7 +137,8 @@ module vga_top(
         any_brick_valid                ? any_brick_rgb :
         stair_valid && in_scene2       ? stair_rgb   :
         goomba_valid && !in_scene2     ? goomba_rgb  :
-        floor_valid                    ? floor_rgb   :
+        (floor_valid  && !in_scene2)   ? floor_rgb   :
+        (floor2_valid && in_scene2)    ? floor2_rgb  :
         bg_valid                       ? bg_rgb      :
         12'b0;
 
@@ -182,6 +182,7 @@ module vga_top(
         .mario_x      (mario_x),
         .mario_y      (mario_y),
         .rgb          (coin_rgb),
+        .in_scene2    (in_scene2),
         .coin_valid   (coin_valid),
         .coin_collected(coin_collected),
         .coin_count   (coin_count)
@@ -245,13 +246,13 @@ module vga_top(
         .valid         (mario_valid),
         .bright        (bright),
         .v_y           (v_y),
-        .in_scene2(in_scene2),
-		.fell_in_pit(fell_in_pit)
+        .scroll_next   (scroll_next)
     );
 
     floor_collision fc(
         .clk         (move_clk),
         .rst         (BtnC),
+        .in_scene2   (in_scene2),
         .mario_x     (mario_x),
         .mario_y     (mario_y),
         .mario_y_next(mario_y_next),
@@ -304,10 +305,9 @@ module vga_top(
         .bright     (bright),
         .hCount     (hc),
         .vCount     (vc),
-        .in_scene2(in_scene2),
-        .rgb(bg_rgb),
-        .bg_valid   (bg_valid),
-        .scroll_next(scroll_next)
+        .scroll_next(scroll_next),
+        .rgb        (bg_rgb),
+        .bg_valid   (bg_valid)
     );
 
     question_block_controller qbc(
@@ -321,6 +321,7 @@ module vga_top(
         .mario_y     (mario_y),
         .mario_moving_up(moving_up),
         .rgb         (qblock_rgb),
+        .in_scene2    (in_scene2),
         .qblock_valid(qblock_valid),
         .qblock_hit  (qblock_hit)
     );
@@ -331,6 +332,14 @@ module vga_top(
         .hCount    (hc), .vCount(vc),
         .rgb       (floor_rgb),
         .floor_valid(floor_valid)
+    );
+
+    floor_controller_scene2 flc2(
+        .clk        (ClkPort),
+        .bright     (bright),
+        .hCount     (hc), .vCount(vc),
+        .rgb        (floor2_rgb),
+        .floor2_valid(floor2_valid)
     );
 
     // Scene 1 bricks (suppressed in scene 2 via any_brick_valid gating)
