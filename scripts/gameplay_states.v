@@ -18,6 +18,8 @@ input qblockHit;
 input Start, Ack, Clk, Reset;
 input marioTouchFlag;
 input marioSlideDone;
+input fellInPit,
+
 output reg flag_slide;
 output Qi, Qp, Qw, Ql;
 output reg respawn;
@@ -35,6 +37,7 @@ localparam LOSE = 3'b100;
 
 assign {Qw, Ql, Qp, Qi} = state;
 reg hitLastFrame;
+reg pitLastFrame;
 reg coinLastFrame;
 reg [1:0] respawn_pulse;
 
@@ -43,6 +46,10 @@ always @(posedge Clk or posedge Reset) begin
         hitLastFrame <= 1'b0;
     else
         hitLastFrame <= marioHitGoombaFlag;
+end
+always @(posedge Clk or posedge Reset) begin
+    if (Reset) pitLastFrame <= 1'b0;
+    else       pitLastFrame <= fellInPit;
 end
 always @(posedge Clk or posedge Reset) begin
     if (Reset)
@@ -100,11 +107,16 @@ always @(posedge Clk, posedge Reset)
                 if (flag_slide && marioSlideDone)
                     doneFlag <= 1'b1;
 
-                if(marioHitGoombaFlag && !hitLastFrame && respawn==0)begin
+                if(marioHitGoombaFlag && !hitLastFrame && respawn == 0)begin
                     lives <= lives - 1;
                     respawn_pulse <= 2'd2;
                     respawn <= 1'b1;  // start immediately
                 end 
+                else if (fellInPit && !pitLastFrame && respawn == 0) begin
+                    lives <= lives - 1;
+                    respawn_pulse <= 2'd2;
+                    respawn <= 1'b1;
+                end
                 else if (respawn_pulse > 0) begin
                     respawn_pulse <= respawn_pulse - 1;
                     respawn <= 1'b1;

@@ -1,46 +1,61 @@
 `timescale 1ns / 1ps
 
 module background_controller(
-    input clk,
-    input bright,
-    input [9:0] hCount,
-    input [9:0] vCount,
-    input scroll_next,
-    output reg [11:0] rgb,
-    output reg bg_valid
+    input  wire        clk,
+    input  wire        bright,
+    input  wire [9:0]  hCount,
+    input  wire [9:0]  vCount,
+    input  wire     in_scene2,
+    output reg  [11:0] rgb,
+    output wire        bg_valid
 );
 
-    // full 640x480 background
-    // row is 9 bits (0-479), col is 10 bits (0-639)
-    wire [8:0] sprite_row = vCount[8:0];
-    wire [9:0] sprite_col = hCount - 144;
+    // -----------------------------------------------------------------------
+    // Scene register — latches on scroll_next pulse
+    // -----------------------------------------------------------------------
+    reg in_scene2;
 
-    wire [11:0] bg_color;
-    wire [11:0] bg_color2;
+    always @(posedge clk) begin
+        if (scroll_next)
+            in_scene2 <= 1'b1;
+    end
 
-    background_1_rom bg_rom(
-        .clk(clk),
-        .row(sprite_row),
-        .col(sprite_col),
-        .color_data(bg_color)
+    // -----------------------------------------------------------------------
+    // ROM address computation — both ROMs are 480×640 (row[8:0], col[9:0])
+    // -----------------------------------------------------------------------
+    wire [8:0] row_addr = vCount[8:0];
+    wire [9:0] col_addr = hCount[9:0];
+
+    // Scene 1 background ROM
+    wire [11:0] bg1_color;
+    new_background1_sky_nofloor_rom bg1_rom (
+        .clk   (clk),
+        .row   (row_addr),
+        .col   (col_addr),
+        .color_data (bg1_color)
     );
-    background_2_rom bg_rom2(
-        .clk(clk),
-        .row(sprite_row),
-        .col(sprite_col),
-        .color_data(bg_color2)
+
+    // Scene 2 background ROM
+    wire [11:0] bg2_color;
+    background2_rom bg2_rom (
+        .clk   (clk),
+        .row   (row_addr),
+        .col   (col_addr),
+        .color_data (bg2_color)
     );
+
+    // -----------------------------------------------------------------------
+    // Output mux
+    // -----------------------------------------------------------------------
+    assign bg_valid = bright;   // background always fills every visible pixel
+
     always @(*) begin
-        if (~bright|| hCount < 10'd144 || hCount >= 10'd784) begin
-            rgb      = 12'b000000000000;
-            bg_valid = 1'b0;
-        end else begin
-            if(scroll_next)
-                rgb = bg_color2;
-            else
-                rgb = bg_color;
-            bg_valid = 1'b1;   // always valid — covers every pixel
-        end
+        if (!bright)
+            rgb = 12'b0;
+        else if (in_scene2)
+            rgb = bg2_color;
+        else
+            rgb = bg1_color;
     end
 
 endmodule

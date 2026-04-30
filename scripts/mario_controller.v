@@ -17,6 +17,9 @@ module mario_controller(
     input [9:0] mario_x_final,
     input [9:0] mario_y_final,
 
+    // for scene 2
+    input wire in_scene2,
+
     // collision flags from floor_collision and brick_collision
     input on_floor,
     input on_brick,
@@ -36,6 +39,9 @@ module mario_controller(
     output wire moving_left, moving_right,
     output reg [5:0] v_y,
 
+    // for scene 2 pit
+    output reg fell_in_pit,
+
     // drawing
     output reg [11:0] rgb,
     output reg valid,
@@ -52,7 +58,13 @@ module mario_controller(
 
     // TODO: flag location, update as needed based on flag_controller 
     localparam FLAG_SLIDE_X = 570;
-    localparam FLAG_BOTTOM_Y = 400;
+    localparam FLAG_BOTTOM_Y = 416;
+
+    // for gap / death pit between staircases
+    localparam PIT_LEFT  = 272;  // = LEFT_X + STAIR_W
+    localparam PIT_RIGHT = 400;  // = RIGHT_X
+    localparam PIT_DEATH_Y = 480; // bottom of screen
+
 
     // is current pixel inside mario's bounding box?
     wire mario_bound;
@@ -82,14 +94,6 @@ module mario_controller(
     reg [3:0] walk_anim_counter;
     reg walk_frame;
     reg facing_left; // only need left reg cuz he faces right by default
-    
-    // keep for testing, this is the OG mario that WAS showing up (before 4/26 changes)
-    // mario_sprite_rom normal_rom(
-    //     .clk(clk),
-    //     .row(sprite_y),
-    //     .col(sprite_x),
-    //     .color_data(normal_color)
-    // );
 
     mario_right_rom right_rom(
         .clk(clk),
@@ -286,15 +290,15 @@ module mario_controller(
             walk_frame <= 0;
         end
         
-        if(respawn)begin
-            mario_x       <= 144;
-            mario_y       <= 384;
-            mario_x_next  <= 144;
-            mario_y_next  <= 384;
-            v_y           <= 0;
-            jumping       <= 1'b0;
-            up            <= 1'b0;
-            respawn_flash_timer <= 8'd200;  // flash for 200 ticks
+        if (respawn) begin
+            mario_x      <= 144;
+            mario_y      <= in_scene2 ? 10'd416 : 10'd384;
+            mario_x_next <= 144;
+            mario_y_next <= in_scene2 ? 10'd416 : 10'd384;
+            v_y          <= 0;
+            jumping      <= 1'b0;
+            up           <= 1'b0;
+            respawn_flash_timer <= 8'd200;
         end
         
         if (respawn_flash_timer > 0) begin
@@ -306,12 +310,27 @@ module mario_controller(
          if(mario_x_final == SCREEN_RIGHT)begin
             scroll_next <= 1'b1;
             mario_x      <= 144;
-            mario_y      <= 432;
+            mario_y      <= 416;
             mario_x_next <= 144;
-            mario_y_next <= 432;
+            mario_y_next <= 416;
           end
         else
             scroll_next <= 1'b0;
+    end
+        if (in_scene2 && 
+            mario_x_final + MARIO_W > PIT_LEFT && 
+            mario_x_final < PIT_RIGHT &&
+            mario_y_final >= PIT_DEATH_Y) begin
+                fell_in_pit  <= 1'b1;
+                mario_x      <= 144;      // respawn left side scene 2
+                mario_y      <= 416;
+                mario_x_next <= 144;
+                mario_y_next <= 416;
+                v_y          <= 0;
+                jumping      <= 1'b0;
+                up           <= 1'b0;
+        end else begin
+        fell_in_pit <= 1'b0;
     end
     end
     assign moving_up    = up && (v_y > 0);
