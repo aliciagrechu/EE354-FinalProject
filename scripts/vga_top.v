@@ -340,7 +340,6 @@ module vga_top(
         .mario_y     (mario_y),
         .mario_moving_up(moving_up),
         .rgb         (qblock_rgb),
-        .in_scene2    (in_scene2),
         .qblock_valid(qblock_valid),
         .qblock_hit  (qblock_hit)
     );
