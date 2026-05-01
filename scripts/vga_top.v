@@ -20,7 +20,6 @@ module vga_top(
     wire Reset;
     assign Reset = BtnC;
     wire Qi, Qp, Qw, Ql;
-    wire [1:0] lives_out;
 
     // -----------------------------------------------------------------------
     // Clock divider
