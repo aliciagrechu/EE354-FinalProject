@@ -8,7 +8,8 @@ module gameplay_states (
     marioTouchFlag,
     marioSlideDone,
     coinCollected,
-    qblockHit, flag_slide
+    qblockHit, flag_slide,
+    fellInPit, lives_out
   );
 
 input BtnD;
@@ -23,6 +24,7 @@ input fellInPit;
 output reg flag_slide;
 output Qi, Qp, Qw, Ql;
 output reg respawn;
+output wire [1:0] lives_out;
 
 // Rest are wire by default
 reg [2:0] coins; // ~5 coins total in the level
@@ -36,6 +38,7 @@ localparam WIN = 3'b101;
 localparam LOSE = 3'b100; 
 
 assign {Qw, Ql, Qp, Qi} = state;
+assign lives_out = lives;
 reg hitLastFrame;
 reg pitLastFrame;
 reg coinLastFrame;

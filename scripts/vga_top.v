@@ -20,6 +20,7 @@ module vga_top(
     wire Reset;
     assign Reset = BtnC;
     wire Qi, Qp, Qw, Ql;
+    wire [1:0] lives_out;
 
     // -----------------------------------------------------------------------
     // Clock divider
@@ -97,6 +98,10 @@ module vga_top(
     wire [11:0] mario_rgb, floor_rgb, floor2_rgb, bg_rgb;
     wire        mario_valid, floor_valid, floor2_valid, bg_valid;
 
+    wire [11:0] hearts_rgb;
+    wire        hearts_valid;
+    wire [1:0]  lives_out;
+
     wire mario_hit;
     wire [11:0] goomba_rgb;
     wire        goomba_valid;
@@ -132,6 +137,7 @@ module vga_top(
     wire [11:0] rgb;
     assign rgb =
         mario_valid                    ? mario_rgb   :
+        hearts_valid                   ? hearts_rgb  :
         flag_valid  && in_scene2       ? flag_rgb    :
         coin_valid  && !in_scene2      ? coin_rgb    :
         qblock_valid && !in_scene2     ? qblock_rgb  :
@@ -157,6 +163,16 @@ module vga_top(
         .hSync    (hSync), .vSync(vSync),
         .bright   (bright),
         .hCount   (hc),    .vCount(vc)
+    );
+
+    hearts_controller hc_inst(
+        .clk         (ClkPort),
+        .bright      (bright),
+        .hCount      (hc),
+        .vCount      (vc),
+        .lives       (lives_out),
+        .rgb         (hearts_rgb),
+        .hearts_valid(hearts_valid)
     );
 
     // Goomba — only active in scene 1
@@ -214,9 +230,10 @@ module vga_top(
         .marioTouchFlag   (mario_touching_flag && in_scene2),
         .marioSlideDone   (mario_slide_done),
         .flag_slide       (flag_slide),
-        .coinCollected    (coin_collected),   // fixed pocrt name
+        .coinCollected    (coin_collected),   
         .qblockHit        (qblock_hit),
-        .fellInPit(fell_in_pit && in_scene2),
+        .fellInPit        (fell_in_pit && in_scene2),
+        .lives_out        (lives_out),
         .Qi(Qi), .Qp(Qp), .Qw(Qw), .Ql(Ql)
     );
 
