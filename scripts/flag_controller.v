@@ -76,7 +76,7 @@ module flag_controller(
     );
 
     wire [11:0] slide_color;
-    mario_flag_rom slide_mario_inst(
+    mario_slide_rom slide_mario_inst(
         .clk        (clk),
         .row        (slide_row),
         .col        (slide_col),
