@@ -198,7 +198,6 @@ module vga_top(
         .mario_x      (mario_x),
         .mario_y      (mario_y),
         .rgb          (coin_rgb),
-        .in_scene2    (in_scene2),
         .coin_valid   (coin_valid),
         .coin_collected(coin_collected),
         .coin_count   (coin_count)
