@@ -6,7 +6,7 @@ module flag_controller(
     input  wire [9:0]  hCount, vCount,
     input  wire [9:0]  mario_x,
     input  wire [9:0]  mario_y,
-    input  wire        flag_slide,        // NEW: from gameplay_states
+    input  wire        flag_slide,        
     output reg  [11:0] rgb,
     output reg         flag_valid,
     output reg         mario_touching_flag // now a single-cycle rising-edge pulse
@@ -15,19 +15,19 @@ module flag_controller(
     // -----------------------------------------------------------------------
     // Positions — adjust to match your background2.png layout
     // -----------------------------------------------------------------------
-    localparam FLAG_X   = 10'd580;
-    localparam FLAG_Y   = 10'd88;     // top of pole
-    localparam FLAG_W   = 10'd48;
-    localparam FLAG_H   = 10'd360;
+    localparam FLAG_X   = 580;
+    localparam FLAG_Y   = 88;     // top of pole
+    localparam FLAG_W   = 48;
+    localparam FLAG_H   = 360;
 
     // Base brick directly below the pole bottom, sits on the floor
     localparam BASE_X   = FLAG_X;
     localparam BASE_Y   = FLAG_Y + FLAG_H;  // = 448
-    localparam BASE_W   = 10'd32;
-    localparam BASE_H   = 10'd32;
+    localparam BASE_W   = 32;
+    localparam BASE_H   = 32;
 
-    localparam MARIO_W  = 10'd32;
-    localparam MARIO_H  = 10'd32;
+    localparam MARIO_W  = 32;
+    localparam MARIO_H  = 32;
 
     // -----------------------------------------------------------------------
     // Bounding boxes
