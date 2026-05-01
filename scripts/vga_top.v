@@ -414,7 +414,9 @@ module vga_top(
 
     assign SSD3 = 4'b0000;
     assign SSD2 = 4'b0000;
-    assign SSD1 = {3'b0, in_scene2};   // shows which scene we're in
+    assign SSD1 = Qw ? 4'b0001 :   // displays 1 for win
+                  Ql ? 4'b1100 :   // displays L for lose
+                  {3'b0, in_scene2};
     assign SSD0 = {1'b0, coin_count};
 
     assign ssdscan_clk = DIV_CLK[19:18];
@@ -447,7 +449,7 @@ module vga_top(
             4'b1001: SSD_CATHODES = 8'b00001000;
             4'b1010: SSD_CATHODES = 8'b00010000;
             4'b1011: SSD_CATHODES = 8'b11000000;
-            4'b1100: SSD_CATHODES = 8'b01100010;
+            4'b1100: SSD_CATHODES = 8'b11000010;
             4'b1101: SSD_CATHODES = 8'b10000100;
             4'b1110: SSD_CATHODES = 8'b01100000;
             4'b1111: SSD_CATHODES = 8'b01110000;
