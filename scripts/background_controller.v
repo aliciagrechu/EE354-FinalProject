@@ -18,7 +18,7 @@ module background_controller(
     reg in_scene2;
 
     always @(posedge clk) begin
-        if (scroll_next)
+        if (in_scene2)
             in_scene2 <= 1'b1;
         else
             in_scene2 <= 1'b0;

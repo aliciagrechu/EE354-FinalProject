@@ -184,7 +184,8 @@ module mario_controller(
         respawn_flash_timer <= 1'b0;
         visible <= 1'b1;
         slide_done <= 1'b0;
-        //jump_done <= 1'b0;
+        fell_in_pit  <= 1'b0;  
+        scroll_next  <= 1'b0;  
         walk_anim_counter <= 1'b0;
         walk_frame <= 1'b0;
         facing_left <= 1'b0;
@@ -316,9 +317,9 @@ module mario_controller(
           end
         else
             scroll_next <= 1'b0;
-    end
+        
         if (in_scene2 && 
-            mario_x_final + MARIO_W > PIT_LEFT && 
+            mario_x_final + WIDTH  > PIT_LEFT && 
             mario_x_final < PIT_RIGHT &&
             mario_y_final >= PIT_DEATH_Y) begin
                 fell_in_pit  <= 1'b1;
@@ -329,10 +330,11 @@ module mario_controller(
                 v_y          <= 0;
                 jumping      <= 1'b0;
                 up           <= 1'b0;
-        end else begin
+        end else 
         fell_in_pit <= 1'b0;
+        end
     end
-    end
+
     assign moving_up    = up && (v_y > 0);
     assign moving_down  = !up && (v_y > 0);
     assign moving_right = btnR && !btnL;

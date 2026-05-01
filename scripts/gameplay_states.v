@@ -65,7 +65,7 @@ always @(posedge Clk, posedge Reset)
           state <= INI;
           lives <= 2'b11;
           coins <= 3'b000;
-      flag_slide <= 1'b0;
+          flag_slide <= 1'b0;
 		  doneFlag <= 1'b0;
 		  respawn_pulse <= 0; 
 		  respawn <= 1'b0;

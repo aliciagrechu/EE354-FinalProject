@@ -36,7 +36,7 @@ module vga_top(
     // Scene register
     // -----------------------------------------------------------------------
     reg in_scene2;
-    always @(posedge ClkPort or posedge Reset) begin
+    always @(posedge move_clk or posedge Reset) begin
         if (Reset)       in_scene2 <= 1'b0;
         else if (scroll_next) in_scene2 <= 1'b1;
     end
@@ -117,6 +117,7 @@ module vga_top(
     wire        mario_touching_flag;
     wire        flag_slide;
     wire        mario_slide_done;
+    wire        fell_in_pit;
 
     wire [11:0] stair_rgb;
     wire        stair_valid;
@@ -213,8 +214,9 @@ module vga_top(
         .marioTouchFlag   (mario_touching_flag && in_scene2),
         .marioSlideDone   (mario_slide_done),
         .flag_slide       (flag_slide),
-        .coinCollected    (coin_collected),   // fixed port name
+        .coinCollected    (coin_collected),   // fixed pocrt name
         .qblockHit        (qblock_hit),
+        .fellInPit(fell_in_pit && in_scene2),
         .Qi(Qi), .Qp(Qp), .Qw(Qw), .Ql(Ql)
     );
 
@@ -223,6 +225,7 @@ module vga_top(
         .move_clk      (move_clk),
         .rst           (BtnC),
         .respawn       (respawn),
+        .in_scene2     (in_scene2),
         .flag_slide    (flag_slide),
         .slide_done    (mario_slide_done),
         .btnU          (BtnU), .btnL(BtnL), .btnR(BtnR),
@@ -246,7 +249,8 @@ module vga_top(
         .valid         (mario_valid),
         .bright        (bright),
         .v_y           (v_y),
-        .scroll_next   (scroll_next)
+        .scroll_next   (scroll_next),
+        .fell_in_pit   (fell_in_pit)
     );
 
     floor_collision fc(
@@ -305,7 +309,7 @@ module vga_top(
         .bright     (bright),
         .hCount     (hc),
         .vCount     (vc),
-        .scroll_next(scroll_next),
+        .in_scene2  (in_scene2),
         .rgb        (bg_rgb),
         .bg_valid   (bg_valid)
     );
